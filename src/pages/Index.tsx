@@ -4,6 +4,7 @@ import { Header } from '@/components/Header';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { TemplatesPage } from '@/pages/TemplatesPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
+import { CalculatorPage } from '@/pages/CalculatorPage';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Project, Template, Material } from '@/types';
 
@@ -73,6 +74,14 @@ const Index: React.FC = () => {
     setTemplates(templates.filter((t) => t.id !== id));
   };
 
+  const addMaterialToProject = (projectId: number, material: Material) => {
+    setProjects(projects.map((p) => 
+      p.id === projectId 
+        ? { ...p, materials: [...p.materials, material] }
+        : p
+    ));
+  };
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -84,6 +93,15 @@ const Index: React.FC = () => {
               projects={projects}
               onDeleteProject={deleteProject}
               onCreateProject={createProject}
+            />
+          }
+        />
+        <Route
+          path="/calculator"
+          element={
+            <CalculatorPage
+              projects={projects}
+              onAddMaterialToProject={addMaterialToProject}
             />
           }
         />
