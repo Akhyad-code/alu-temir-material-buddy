@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -14,7 +14,8 @@ import { MaterialForm } from '@/components/MaterialForm';
 import { MaterialCard } from '@/components/MaterialCard';
 import { TemplateForm } from '@/components/TemplateForm';
 import { FileManager } from '@/components/FileManager';
-import { Project, Material, Template, ProjectFile } from '@/types';
+import { SearchFilter } from '@/components/SearchFilter';
+import { Project, Material, Template, ProjectFile, MATERIAL_CATEGORIES } from '@/types';
 
 interface ProjectDetailPageProps {
   project: Project;
@@ -34,6 +35,35 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+
+  const filteredMaterials = useMemo(() => {
+    let result = project.materials;
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((material) => {
+        if (material.name.toLowerCase().includes(query)) return true;
+        if (material.notes.toLowerCase().includes(query)) return true;
+        if (material.quantity.toLowerCase().includes(query)) return true;
+        return false;
+      });
+    }
+
+    // Filter by category
+    if (categoryFilter) {
+      result = result.filter((material) => material.category === categoryFilter);
+    }
+
+    return result;
+  }, [project.materials, searchQuery, categoryFilter]);
+
+  const categoryOptions = MATERIAL_CATEGORIES.map((cat) => ({
+    value: cat,
+    label: cat,
+  }));
 
   const updateField = (field: keyof Project, value: string) => {
     onUpdateProject({ ...project, [field]: value });
@@ -302,6 +332,19 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
         </div>
       )}
 
+      {/* Materials Search & Filter */}
+      {project.materials.length > 0 && (
+        <SearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterValue={categoryFilter}
+          onFilterChange={setCategoryFilter}
+          filterOptions={categoryOptions}
+          filterLabel="категории"
+          searchPlaceholder="Поиск по материалам..."
+        />
+      )}
+
       {/* Materials List */}
       {project.materials.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl shadow-card">
@@ -325,9 +368,24 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
             <span>Добавить позицию</span>
           </button>
         </div>
+      ) : filteredMaterials.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl shadow-card">
+          <p className="text-muted-foreground">
+            По запросу ничего не найдено
+          </p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setCategoryFilter('');
+            }}
+            className="mt-4 text-sm text-primary hover:underline"
+          >
+            Сбросить фильтры
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {project.materials.map((material) => (
+          {filteredMaterials.map((material) => (
             <MaterialCard
               key={material.id}
               material={material}

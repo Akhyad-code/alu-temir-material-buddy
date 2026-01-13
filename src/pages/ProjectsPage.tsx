@@ -1,7 +1,7 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
 import { Plus, FolderOpen } from 'lucide-react';
 import { ProjectCard } from '@/components/ProjectCard';
+import { SearchFilter } from '@/components/SearchFilter';
 import { Project } from '@/types';
 
 interface ProjectsPageProps {
@@ -15,6 +15,25 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
   onDeleteProject,
   onCreateProject,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery.trim()) return projects;
+
+    const query = searchQuery.toLowerCase().trim();
+    return projects.filter((project) => {
+      // Search in project name
+      if (project.name.toLowerCase().includes(query)) return true;
+      // Search in location
+      if (project.location.toLowerCase().includes(query)) return true;
+      // Search in materials
+      if (project.materials.some((m) => m.name.toLowerCase().includes(query))) return true;
+      // Search in notes
+      if (project.notes.toLowerCase().includes(query)) return true;
+      return false;
+    });
+  }, [projects, searchQuery]);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -36,6 +55,14 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
         </button>
       </div>
 
+      {projects.length > 0 && (
+        <SearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Поиск по названию, адресу, материалам..."
+        />
+      )}
+
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mb-6">
@@ -55,9 +82,15 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({
             <span>Создать объект</span>
           </button>
         </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-muted-foreground">
+            По запросу "{searchQuery}" ничего не найдено
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
