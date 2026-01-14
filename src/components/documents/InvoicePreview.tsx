@@ -140,7 +140,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ document }) => {
             </tr>
             {document.includeVAT && (
               <tr>
-                <td className="text-right pr-4 py-1">В том числе НДС ({document.vatRate}%):</td>
+                <td className="text-right pr-4 py-1">В том числе НДС (16%):</td>
                 <td className="text-right py-1 w-32">{formatCurrency(vatAmount)} ₸</td>
               </tr>
             )}

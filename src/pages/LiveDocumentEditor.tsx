@@ -53,9 +53,11 @@ const createNewKP = (): CommercialProposal => ({
   number: '1',
   date: new Date().toLocaleDateString('ru-RU'),
   city: 'г. Алматы',
-  client: { name: '', address: '' },
+  client: { name: '', bin: '', address: '', phone: '', contactPerson: '' },
   items: [],
   notes: '',
+  showDiagram: true,
+  diagramType: 'V59x43',
 });
 
 const createNewInvoice = (): Invoice => ({
@@ -64,10 +66,10 @@ const createNewInvoice = (): Invoice => ({
   number: '1',
   date: new Date().toLocaleDateString('ru-RU'),
   supplier: { ...DEFAULT_COMPANY_INFO },
-  buyer: { name: '', address: '' },
+  buyer: { name: '', bin: '', address: '', phone: '', contactPerson: '' },
   items: [],
   includeVAT: true,
-  vatRate: 12,
+  vatRate: 16,
 });
 
 export const LiveDocumentEditor: React.FC = () => {
@@ -546,14 +548,14 @@ export const LiveDocumentEditor: React.FC = () => {
               </CardContent>
             </Card>
             
-            {/* Client Info */}
+            {/* Client Info - Full Details */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Клиент</CardTitle>
+                <CardTitle className="text-sm">Реквизиты клиента</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-2">
                 <div>
-                  <Label className="text-xs">Название / ФИО</Label>
+                  <Label className="text-xs">Название компании / ФИО</Label>
                   <Input
                     value={documentType === 'kp' 
                       ? (currentDocument as CommercialProposal).client.name 
@@ -572,7 +574,103 @@ export const LiveDocumentEditor: React.FC = () => {
                         } as Invoice));
                       }
                     }}
-                    placeholder="ТОО / ИП название"
+                    placeholder='ТОО "Название" / ИП Фамилия И.О.'
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">БИН / ИИН</Label>
+                  <Input
+                    value={documentType === 'kp' 
+                      ? (currentDocument as CommercialProposal).client.bin || ''
+                      : (currentDocument as Invoice).buyer.bin || ''
+                    }
+                    onChange={(e) => {
+                      if (documentType === 'kp') {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          client: { ...(prev as CommercialProposal).client, bin: e.target.value }
+                        } as CommercialProposal));
+                      } else {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          buyer: { ...(prev as Invoice).buyer, bin: e.target.value }
+                        } as Invoice));
+                      }
+                    }}
+                    placeholder="123456789012"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Адрес</Label>
+                  <Input
+                    value={documentType === 'kp' 
+                      ? (currentDocument as CommercialProposal).client.address 
+                      : (currentDocument as Invoice).buyer.address
+                    }
+                    onChange={(e) => {
+                      if (documentType === 'kp') {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          client: { ...(prev as CommercialProposal).client, address: e.target.value }
+                        } as CommercialProposal));
+                      } else {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          buyer: { ...(prev as Invoice).buyer, address: e.target.value }
+                        } as Invoice));
+                      }
+                    }}
+                    placeholder="г. Алматы, ул. Примера, 123"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Телефон</Label>
+                  <Input
+                    value={documentType === 'kp' 
+                      ? (currentDocument as CommercialProposal).client.phone || ''
+                      : (currentDocument as Invoice).buyer.phone || ''
+                    }
+                    onChange={(e) => {
+                      if (documentType === 'kp') {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          client: { ...(prev as CommercialProposal).client, phone: e.target.value }
+                        } as CommercialProposal));
+                      } else {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          buyer: { ...(prev as Invoice).buyer, phone: e.target.value }
+                        } as Invoice));
+                      }
+                    }}
+                    placeholder="+7 7XX XXX XXXX"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Контактное лицо</Label>
+                  <Input
+                    value={documentType === 'kp' 
+                      ? (currentDocument as CommercialProposal).client.contactPerson || ''
+                      : (currentDocument as Invoice).buyer.contactPerson || ''
+                    }
+                    onChange={(e) => {
+                      if (documentType === 'kp') {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          client: { ...(prev as CommercialProposal).client, contactPerson: e.target.value }
+                        } as CommercialProposal));
+                      } else {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          buyer: { ...(prev as Invoice).buyer, contactPerson: e.target.value }
+                        } as Invoice));
+                      }
+                    }}
+                    placeholder="Фамилия Имя"
                     className="h-8 text-sm"
                   />
                 </div>
