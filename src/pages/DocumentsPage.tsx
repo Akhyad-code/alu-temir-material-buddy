@@ -23,7 +23,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  Copy
+  Copy,
+  Calculator
 } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import {
@@ -197,6 +198,27 @@ export const DocumentsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Editor Card */}
+      <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+        <CardContent className="flex items-center justify-between py-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-primary/10">
+              <Calculator className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg">Live Редактор</h3>
+              <p className="text-sm text-muted-foreground">
+                Калькулятор + документ на одном экране
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => navigate('/documents/editor')} size="lg">
+            <Plus className="h-4 w-4 mr-2" />
+            Открыть редактор
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Create New Document Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
