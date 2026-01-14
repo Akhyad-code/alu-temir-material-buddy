@@ -23,6 +23,18 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         backgroundRepeat: 'no-repeat',
       }}
     >
+      {/* White overlay to cover template content below header */}
+      <div 
+        className="absolute bg-white" 
+        style={{ 
+          top: '280px', 
+          left: '20px', 
+          right: '20px', 
+          bottom: '60px',
+          zIndex: 5,
+        }} 
+      />
+      
       {/* Content overlay */}
       <div className="relative z-10">
         {/* Spacing for header logo area - increased to avoid overlap */}
@@ -32,7 +44,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         <div className="h-[20px]" />
 
         {/* Materials Table */}
-        <div className="mx-[25px]">
+        <div className="mx-[25px] bg-white relative z-10">
           <table className="w-full border-collapse text-[10px]">
             <thead>
               <tr className="bg-[#1a3a5c] text-white">
@@ -48,32 +60,32 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
               {document.items.length === 0 ? (
                 <>
                   <tr>
-                    <td colSpan={6} className="border border-gray-300 px-2 py-4 text-center text-gray-400 italic">
+                    <td colSpan={6} className="border border-gray-300 px-2 py-4 text-center text-gray-400 italic bg-white">
                       Добавьте позиции через калькулятор
                     </td>
                   </tr>
                   <tr className="font-bold bg-white">
-                    <td colSpan={4} className="border border-gray-300 px-2 py-1.5"></td>
-                    <td className="border border-gray-300 px-1 py-1.5 text-right text-[#1a3a5c]">Итого</td>
-                    <td className="border border-gray-300 px-1 py-1.5 text-right">0,00</td>
+                    <td colSpan={4} className="border border-gray-300 px-2 py-1.5 bg-white"></td>
+                    <td className="border border-gray-300 px-1 py-1.5 text-right text-[#1a3a5c] bg-white">Итого</td>
+                    <td className="border border-gray-300 px-1 py-1.5 text-right bg-white">0,00</td>
                   </tr>
                 </>
               ) : (
                 <>
                   {document.items.map((item) => (
-                    <tr key={item.id}>
-                      <td className="border border-gray-300 px-2 py-1.5">{item.name}</td>
-                      <td className="border border-gray-300 px-1 py-1.5 text-center">{item.size || '-'}</td>
-                      <td className="border border-gray-300 px-1 py-1.5 text-center">{item.unit}</td>
-                      <td className="border border-gray-300 px-1 py-1.5 text-right">{formatCurrency(item.price)}</td>
-                      <td className="border border-gray-300 px-1 py-1.5 text-center">{item.quantity}</td>
-                      <td className="border border-gray-300 px-1 py-1.5 text-right font-medium">{formatCurrency(item.total)}</td>
+                    <tr key={item.id} className="bg-white">
+                      <td className="border border-gray-300 px-2 py-1.5 bg-white">{item.name}</td>
+                      <td className="border border-gray-300 px-1 py-1.5 text-center bg-white">{item.size || '-'}</td>
+                      <td className="border border-gray-300 px-1 py-1.5 text-center bg-white">{item.unit}</td>
+                      <td className="border border-gray-300 px-1 py-1.5 text-right bg-white">{formatCurrency(item.price)}</td>
+                      <td className="border border-gray-300 px-1 py-1.5 text-center bg-white">{item.quantity}</td>
+                      <td className="border border-gray-300 px-1 py-1.5 text-right font-medium bg-white">{formatCurrency(item.total)}</td>
                     </tr>
                   ))}
                   <tr className="font-bold bg-white">
-                    <td colSpan={4} className="border border-gray-300 px-2 py-1.5"></td>
-                    <td className="border border-gray-300 px-1 py-1.5 text-right text-[#1a3a5c]">Итого</td>
-                    <td className="border border-gray-300 px-1 py-1.5 text-right">{formatCurrency(total)}</td>
+                    <td colSpan={4} className="border border-gray-300 px-2 py-1.5 bg-white"></td>
+                    <td className="border border-gray-300 px-1 py-1.5 text-right text-[#1a3a5c] bg-white">Итого</td>
+                    <td className="border border-gray-300 px-1 py-1.5 text-right bg-white">{formatCurrency(total)}</td>
                   </tr>
                 </>
               )}
@@ -90,7 +102,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
 
         {/* Profile Diagram Section */}
         {document.showDiagram && document.diagramDimensions && (
-          <div className="mx-[25px] mt-6 bg-white">
+          <div className="mx-[25px] mt-6 bg-white relative z-10">
             <ProfileDiagram dimensions={document.diagramDimensions || DEFAULT_DIMENSIONS} />
           </div>
         )}
