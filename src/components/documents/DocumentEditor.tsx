@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { CommercialProposal, Invoice, DocumentItem, DEFAULT_COMPANY_INFO, formatCurrency } from '@/types/documents';
+import { Project } from '@/types';
 import { DocumentItemRow } from './DocumentItemRow';
+import { ImportFromProject } from './ImportFromProject';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -13,10 +15,18 @@ import { Plus, Building2, User, FileText } from 'lucide-react';
 interface DocumentEditorProps {
   document: CommercialProposal | Invoice;
   onUpdate: (doc: CommercialProposal | Invoice) => void;
+  projects?: Project[];
 }
 
-export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpdate }) => {
+export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpdate, projects = [] }) => {
   const isInvoice = document.type === 'invoice';
+
+  const handleImportItems = (items: DocumentItem[]) => {
+    onUpdate({
+      ...document,
+      items: [...document.items, ...items],
+    });
+  };
 
   const handleAddItem = () => {
     const newItem: DocumentItem = {
@@ -78,12 +88,17 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpda
         <TabsContent value="items" className="space-y-4 mt-4">
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <CardTitle className="text-lg">Товары/Услуги</CardTitle>
-                <Button size="sm" onClick={handleAddItem}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Добавить
-                </Button>
+                <div className="flex items-center gap-2">
+                  {projects.length > 0 && (
+                    <ImportFromProject projects={projects} onImport={handleImportItems} />
+                  )}
+                  <Button size="sm" onClick={handleAddItem}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Добавить
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
