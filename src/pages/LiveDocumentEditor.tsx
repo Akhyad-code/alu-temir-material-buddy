@@ -13,7 +13,8 @@ import {
   RotateCcw,
   Layers,
   Download,
-  Image
+  Image,
+  Ruler
 } from 'lucide-react';
 import { 
   CommercialProposal, 
@@ -24,11 +25,13 @@ import {
 } from '@/types/documents';
 import { CommercialProposalPreview } from '@/components/documents/CommercialProposalPreview';
 import { InvoicePreview } from '@/components/documents/InvoicePreview';
+import { PROFILE_TYPES } from '@/components/documents/ProfileDiagrams';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
 import { 
   Select,
   SelectContent,
@@ -547,6 +550,58 @@ export const LiveDocumentEditor: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+            
+            {/* Profile Diagram Settings (only for KP) */}
+            {documentType === 'kp' && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Ruler className="h-4 w-4" />
+                    Чертёж профиля
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Показать чертёж</Label>
+                    <Switch
+                      checked={(currentDocument as CommercialProposal).showDiagram || false}
+                      onCheckedChange={(checked) => {
+                        setCurrentDocument(prev => ({
+                          ...prev,
+                          showDiagram: checked,
+                        } as CommercialProposal));
+                      }}
+                    />
+                  </div>
+                  
+                  {(currentDocument as CommercialProposal).showDiagram && (
+                    <div>
+                      <Label className="text-xs">Тип профиля</Label>
+                      <Select 
+                        value={(currentDocument as CommercialProposal).diagramType || 'V59x43'}
+                        onValueChange={(value) => {
+                          setCurrentDocument(prev => ({
+                            ...prev,
+                            diagramType: value,
+                          } as CommercialProposal));
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue placeholder="Выберите профиль" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PROFILE_TYPES.map((profile) => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.name} ({profile.width}x{profile.height} мм)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             
             {/* Client Info - Full Details */}
             <Card>
