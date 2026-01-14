@@ -13,57 +13,73 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
 
   return (
     <div
+      id="kp-preview"
       className="bg-white text-black w-[210mm] min-h-[297mm] mx-auto shadow-xl relative overflow-hidden"
     >
-      {/* Background image - only header and footer */}
+      {/* Background - only show header from template */}
       <div 
-        className="absolute inset-0 pointer-events-none"
+        className="absolute top-0 left-0 right-0 h-[150px] pointer-events-none"
         style={{
           backgroundImage: `url(${kpBackground})`,
-          backgroundSize: '100% 100%',
-          backgroundPosition: 'top left',
+          backgroundSize: '210mm auto',
+          backgroundPosition: 'top center',
           backgroundRepeat: 'no-repeat',
         }}
       />
       
-      {/* White overlay to cover template content but keep header/footer visible */}
-      <div className="absolute top-[145px] left-[20px] right-[20px] bottom-[100px] bg-white" />
+      {/* Footer from template */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none"
+        style={{
+          backgroundImage: `url(${kpBackground})`,
+          backgroundSize: '210mm auto',
+          backgroundPosition: 'bottom center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
 
-      {/* Content */}
+      {/* Content area with white background */}
       <div className="relative z-10">
-        {/* Spacing for header */}
-        <div className="h-[145px]" />
+        {/* Spacing for header logo area */}
+        <div className="h-[150px]" />
         
-        {/* Date and Contact - centered under header */}
-        <div className="text-center text-[11px] mb-4 px-8">
+        {/* Date and Contact */}
+        <div className="text-center text-[11px] text-black/90 py-2 bg-white">
           <p className="font-medium">{document.date}</p>
           <p>+7 775 587 77 89</p>
         </div>
 
         {/* Materials Table */}
-        <div className="px-6 mt-4">
-          <table className="w-full border-collapse text-[10px]">
+        <div className="mx-[20px] bg-white pb-4">
+          <table className="w-full border-collapse text-[9px]">
             <thead>
               <tr className="bg-[#1a3a5c] text-white">
                 <th className="border border-[#1a3a5c] px-2 py-1.5 text-left font-medium">Наименование</th>
-                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-12 font-medium">размер</th>
-                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-12 font-medium">ед.изм.</th>
-                <th className="border border-[#1a3a5c] px-1 py-1.5 text-right w-16 font-medium">цена, в тг</th>
-                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-12 font-medium">кол-во</th>
-                <th className="border border-[#1a3a5c] px-1 py-1.5 text-right w-20 font-medium">сумма</th>
+                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-[50px] font-medium">размер</th>
+                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-[45px] font-medium">ед.изм.</th>
+                <th className="border border-[#1a3a5c] px-1 py-1.5 text-right w-[70px] font-medium">цена, в тг</th>
+                <th className="border border-[#1a3a5c] px-1 py-1.5 text-center w-[50px] font-medium">кол-во</th>
+                <th className="border border-[#1a3a5c] px-1 py-1.5 text-right w-[80px] font-medium">сумма</th>
               </tr>
             </thead>
             <tbody className="bg-white">
               {document.items.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="border border-gray-300 px-2 py-6 text-center text-gray-400 italic">
-                    Добавьте позиции через калькулятор
-                  </td>
-                </tr>
+                <>
+                  <tr>
+                    <td colSpan={6} className="border border-gray-300 px-2 py-4 text-center text-gray-400 italic">
+                      Добавьте позиции через калькулятор слева
+                    </td>
+                  </tr>
+                  <tr className="font-bold">
+                    <td colSpan={4} className="border border-gray-300 px-2 py-1"></td>
+                    <td className="border border-gray-300 px-1 py-1 text-right text-[#1a3a5c]">Итого</td>
+                    <td className="border border-gray-300 px-1 py-1 text-right">0,00</td>
+                  </tr>
+                </>
               ) : (
                 <>
                   {document.items.map((item) => (
-                    <tr key={item.id} className="border-b border-gray-300">
+                    <tr key={item.id}>
                       <td className="border border-gray-300 px-2 py-1">{item.name}</td>
                       <td className="border border-gray-300 px-1 py-1 text-center">{item.size || '-'}</td>
                       <td className="border border-gray-300 px-1 py-1 text-center">{item.unit}</td>
@@ -72,8 +88,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
                       <td className="border border-gray-300 px-1 py-1 text-right font-medium">{formatCurrency(item.total)}</td>
                     </tr>
                   ))}
-                  {/* Total row */}
-                  <tr className="font-bold bg-white">
+                  <tr className="font-bold">
                     <td colSpan={4} className="border border-gray-300 px-2 py-1"></td>
                     <td className="border border-gray-300 px-1 py-1 text-right text-[#1a3a5c]">Итого</td>
                     <td className="border border-gray-300 px-1 py-1 text-right">{formatCurrency(total)}</td>
@@ -82,14 +97,17 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
               )}
             </tbody>
           </table>
-        </div>
 
-        {/* Notes */}
-        {document.notes && (
-          <div className="mt-4 mx-6 text-[10px] p-2">
-            <p className="whitespace-pre-wrap">{document.notes}</p>
-          </div>
-        )}
+          {/* Notes */}
+          {document.notes && (
+            <div className="mt-4 text-[9px] p-2 border border-gray-200 rounded">
+              <p className="whitespace-pre-wrap">{document.notes}</p>
+            </div>
+          )}
+        </div>
+        
+        {/* Spacer to push content up from footer */}
+        <div className="h-[60px]" />
       </div>
     </div>
   );
