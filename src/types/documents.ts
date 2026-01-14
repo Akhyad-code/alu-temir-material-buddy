@@ -30,6 +30,12 @@ export interface ClientInfo {
   contactPerson?: string;
 }
 
+export interface ProfileDimensions {
+  width: number;
+  height: number;
+  gap: number;
+}
+
 export interface CommercialProposal {
   id: number;
   type: 'kp';
@@ -41,7 +47,7 @@ export interface CommercialProposal {
   validUntil?: string;
   city: string;
   showDiagram?: boolean;
-  diagramType?: string;
+  diagramDimensions?: ProfileDimensions;
 }
 
 export interface Invoice {

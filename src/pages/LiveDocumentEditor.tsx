@@ -25,7 +25,7 @@ import {
 } from '@/types/documents';
 import { CommercialProposalPreview } from '@/components/documents/CommercialProposalPreview';
 import { InvoicePreview } from '@/components/documents/InvoicePreview';
-import { PROFILE_TYPES } from '@/components/documents/ProfileDiagrams';
+import { DEFAULT_DIMENSIONS } from '@/components/documents/ProfileDiagrams';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -60,7 +60,7 @@ const createNewKP = (): CommercialProposal => ({
   items: [],
   notes: '',
   showDiagram: true,
-  diagramType: 'V59x43',
+  diagramDimensions: { ...DEFAULT_DIMENSIONS },
 });
 
 const createNewInvoice = (): Invoice => ({
@@ -575,29 +575,73 @@ export const LiveDocumentEditor: React.FC = () => {
                   </div>
                   
                   {(currentDocument as CommercialProposal).showDiagram && (
-                    <div>
-                      <Label className="text-xs">Тип профиля</Label>
-                      <Select 
-                        value={(currentDocument as CommercialProposal).diagramType || 'V59x43'}
-                        onValueChange={(value) => {
-                          setCurrentDocument(prev => ({
-                            ...prev,
-                            diagramType: value,
-                          } as CommercialProposal));
-                        }}
-                      >
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue placeholder="Выберите профиль" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PROFILE_TYPES.map((profile) => (
-                            <SelectItem key={profile.id} value={profile.id}>
-                              {profile.name} ({profile.width}x{profile.height} мм)
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <Label className="text-xs">Ширина (мм)</Label>
+                          <Input
+                            type="number"
+                            value={(currentDocument as CommercialProposal).diagramDimensions?.width || 59}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 59;
+                              setCurrentDocument(prev => ({
+                                ...prev,
+                                diagramDimensions: {
+                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
+                                  width: value,
+                                },
+                              } as CommercialProposal));
+                            }}
+                            className="h-8 text-sm"
+                            min={10}
+                            max={200}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Высота (мм)</Label>
+                          <Input
+                            type="number"
+                            value={(currentDocument as CommercialProposal).diagramDimensions?.height || 43}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 43;
+                              setCurrentDocument(prev => ({
+                                ...prev,
+                                diagramDimensions: {
+                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
+                                  height: value,
+                                },
+                              } as CommercialProposal));
+                            }}
+                            className="h-8 text-sm"
+                            min={10}
+                            max={200}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Зазор (мм)</Label>
+                          <Input
+                            type="number"
+                            value={(currentDocument as CommercialProposal).diagramDimensions?.gap || 40}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 40;
+                              setCurrentDocument(prev => ({
+                                ...prev,
+                                diagramDimensions: {
+                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
+                                  gap: value,
+                                },
+                              } as CommercialProposal));
+                            }}
+                            className="h-8 text-sm"
+                            min={5}
+                            max={100}
+                          />
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Профиль V{(currentDocument as CommercialProposal).diagramDimensions?.width || 59}x{(currentDocument as CommercialProposal).diagramDimensions?.height || 43}
+                      </p>
+                    </>
                   )}
                 </CardContent>
               </Card>

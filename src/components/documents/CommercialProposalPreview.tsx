@@ -1,7 +1,7 @@
 import React from 'react';
 import { CommercialProposal, formatCurrency } from '@/types/documents';
 import kpBackground from '@/assets/kp-template-clean.jpg';
-import { ProfileDiagram } from './ProfileDiagrams';
+import { ProfileDiagram, DEFAULT_DIMENSIONS } from './ProfileDiagrams';
 
 interface CommercialProposalPreviewProps {
   document: CommercialProposal;
@@ -25,18 +25,11 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
     >
       {/* Content overlay */}
       <div className="relative z-10">
-        {/* Spacing for header logo area - matching template */}
-        <div className="h-[170px]" />
-        
-        {/* Date, Phone and City */}
-        <div className="text-center text-[11px] text-black/90 py-3">
-          <p className="font-medium">{document.date}</p>
-          <p>{document.client.phone || '+7 707 297 7585'}</p>
-          {document.city && <p>{document.city}</p>}
-        </div>
+        {/* Spacing for header logo area - increased to avoid overlap */}
+        <div className="h-[220px]" />
 
         {/* Spacer before table */}
-        <div className="h-[60px]" />
+        <div className="h-[20px]" />
 
         {/* Materials Table */}
         <div className="mx-[25px]">
@@ -96,9 +89,9 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         </div>
 
         {/* Profile Diagram Section */}
-        {document.showDiagram && document.diagramType && (
-          <div className="mx-[25px] mt-8 bg-white">
-            <ProfileDiagram profileType={document.diagramType} />
+        {document.showDiagram && document.diagramDimensions && (
+          <div className="mx-[25px] mt-6 bg-white">
+            <ProfileDiagram dimensions={document.diagramDimensions || DEFAULT_DIMENSIONS} />
           </div>
         )}
         
