@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import { 
   Calculator, 
   Square, 
@@ -10,7 +11,9 @@ import {
   Printer,
   ArrowLeft,
   RotateCcw,
-  Layers
+  Layers,
+  Download,
+  Image
 } from 'lucide-react';
 import { 
   CommercialProposal, 
@@ -33,6 +36,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { toast } from 'sonner';
 
@@ -64,6 +73,7 @@ const createNewInvoice = (): Invoice => ({
 export const LiveDocumentEditor: React.FC = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useLocalStorage<DocumentType[]>('alu-temir-documents', []);
+  const previewRef = useRef<HTMLDivElement>(null);
   
   // Document state
   const [documentType, setDocumentType] = useState<'kp' | 'invoice'>('kp');
@@ -172,6 +182,42 @@ export const LiveDocumentEditor: React.FC = () => {
     window.print();
   };
   
+  // Download as JPEG
+  const downloadAsJpeg = async () => {
+    const element = previewRef.current;
+    if (!element) return;
+    
+    try {
+      toast.loading('Создание изображения...');
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });
+      
+      const link = document.createElement('a');
+      const docName = documentType === 'kp' 
+        ? `КП_${currentDocument.number}_${currentDocument.date.replace(/\./g, '-')}`
+        : `Счет_${currentDocument.number}_${currentDocument.date.replace(/\./g, '-')}`;
+      link.download = `${docName}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+      
+      toast.dismiss();
+      toast.success('Изображение сохранено');
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Ошибка при создании изображения');
+    }
+  };
+  
+  // Download as PDF (via print)
+  const downloadAsPdf = () => {
+    toast.info('Для сохранения в PDF выберите "Сохранить как PDF" в диалоге печати');
+    window.print();
+  };
+  
   const total = currentDocument.items.reduce((sum, item) => sum + item.total, 0);
 
   return (
@@ -208,6 +254,27 @@ export const LiveDocumentEditor: React.FC = () => {
           <Button variant="outline" size="sm" onClick={saveDocument}>
             Сохранить
           </Button>
+          
+          {/* Download dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Скачать
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              <DropdownMenuItem onClick={downloadAsPdf}>
+                <FileText className="h-4 w-4 mr-2" />
+                Скачать PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadAsJpeg}>
+                <Image className="h-4 w-4 mr-2" />
+                Скачать JPEG
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Печать
@@ -516,7 +583,7 @@ export const LiveDocumentEditor: React.FC = () => {
 
         {/* Right Panel - Live Preview */}
         <div className="flex-1 bg-muted/30 overflow-auto p-6 print:p-0 print:bg-white">
-          <div className="print:shadow-none">
+          <div ref={previewRef} className="print:shadow-none">
             {documentType === 'kp' ? (
               <CommercialProposalPreview document={currentDocument as CommercialProposal} />
             ) : (
