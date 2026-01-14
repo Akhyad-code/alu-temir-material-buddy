@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, FolderOpen, LayoutTemplate, Moon, Sun, Calculator, Search, Command } from 'lucide-react';
+import { Building2, FolderOpen, LayoutTemplate, Moon, Sun, Calculator, Search, FileText } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
 interface HeaderProps {
@@ -19,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSearch }) => {
   const navItems = [
     { path: '/', label: 'Объекты', icon: FolderOpen },
     { path: '/calculator', label: 'Калькулятор', icon: Calculator },
+    { path: '/documents', label: 'Документы', icon: FileText },
     { path: '/templates', label: 'Шаблоны', icon: LayoutTemplate },
   ];
 

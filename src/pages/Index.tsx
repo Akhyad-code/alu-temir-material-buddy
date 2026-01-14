@@ -6,6 +6,7 @@ import { ProjectsPage } from '@/pages/ProjectsPage';
 import { TemplatesPage } from '@/pages/TemplatesPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { CalculatorPage } from '@/pages/CalculatorPage';
+import { DocumentsPage } from '@/pages/DocumentsPage';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Project, Template, Material } from '@/types';
 
@@ -153,6 +154,7 @@ const Index: React.FC = () => {
               <TemplatesPage templates={templates} onDeleteTemplate={deleteTemplate} />
             }
           />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route
             path="/project/:id"
             element={
