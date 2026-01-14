@@ -6,6 +6,7 @@ import {
   DEFAULT_COMPANY_INFO,
   formatCurrency 
 } from '@/types/documents';
+import { Project } from '@/types';
 import { DocumentEditor } from '@/components/documents/DocumentEditor';
 import { CommercialProposalPreview } from '@/components/documents/CommercialProposalPreview';
 import { InvoicePreview } from '@/components/documents/InvoicePreview';
@@ -70,6 +71,7 @@ const createNewInvoice = (): Invoice => ({
 export const DocumentsPage: React.FC = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useLocalStorage<DocumentType[]>('alu-temir-documents', []);
+  const [projects] = useLocalStorage<Project[]>('alu-temir-projects', []);
   const [activeDocument, setActiveDocument] = useState<DocumentType | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -159,7 +161,8 @@ export const DocumentsPage: React.FC = () => {
           <div className="w-[400px] border-r border-border bg-card overflow-hidden no-print">
             <DocumentEditor 
               document={activeDocument} 
-              onUpdate={handleUpdateDocument} 
+              onUpdate={handleUpdateDocument}
+              projects={projects}
             />
           </div>
 
