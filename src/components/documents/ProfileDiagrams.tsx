@@ -1,9 +1,9 @@
 import React from 'react';
 
 export interface ProfileDimensions {
-  width: number;
-  height: number;
-  gap: number;
+  width: number;   // Ширина рейки (26, 59, 93 мм и т.д.)
+  height: number;  // Высота рейки (43, 84, 100 мм и т.д.)
+  gap: number;     // Зазор между рейками
 }
 
 export const DEFAULT_DIMENSIONS: ProfileDimensions = {
@@ -12,7 +12,7 @@ export const DEFAULT_DIMENSIONS: ProfileDimensions = {
   gap: 40,
 };
 
-// Universal editable profile diagram with custom dimensions
+// U-образный профиль реечного потолка
 interface ProfileDiagramProps {
   dimensions: ProfileDimensions;
 }
@@ -20,135 +20,153 @@ interface ProfileDiagramProps {
 export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) => {
   const { width, height, gap } = dimensions;
   
-  // Scale factor to fit diagram nicely
-  const scale = Math.min(1, 300 / (3 * width + 2 * gap + 50));
-  const scaledWidth = width * scale;
-  const scaledHeight = Math.min(height * scale, 80);
-  const scaledGap = gap * scale;
+  // Масштабирование для отображения
+  const maxViewWidth = 400;
+  const profileCount = 3;
+  const totalRealWidth = profileCount * width + (profileCount - 1) * gap;
+  const scale = Math.min(1, (maxViewWidth - 80) / totalRealWidth);
   
-  // Calculate positions
+  const scaledWidth = Math.max(15, width * scale);
+  const scaledHeight = Math.min(80, Math.max(30, height * scale * 0.8));
+  const scaledGap = Math.max(10, gap * scale);
+  const wallThickness = Math.max(2, scaledWidth * 0.08);
+  
   const startX = 40;
-  const profileY = 15;
-  const stemWidth = Math.max(6, scaledWidth * 0.14);
-  const flangeHeight = Math.max(5, scaledHeight * 0.12);
+  const profileY = 20;
   
-  // Calculate total width for centering
-  const totalWidth = 3 * scaledWidth + 2 * scaledGap;
+  const totalWidth = profileCount * scaledWidth + (profileCount - 1) * scaledGap;
   const viewBoxWidth = totalWidth + 80;
-  const viewBoxHeight = scaledHeight + 55;
+  const viewBoxHeight = scaledHeight + 60;
 
   return (
     <div className="flex flex-col items-center py-3">
       <svg 
         viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} 
         className="w-full max-w-[480px] h-auto"
-        style={{ minHeight: '100px' }}
+        style={{ minHeight: '90px' }}
       >
-        {/* Left height dimension */}
-        <line x1="12" y1={profileY} x2="12" y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
-        <line x1="8" y1={profileY} x2="16" y2={profileY} stroke="#0066cc" strokeWidth="1" />
-        <line x1="8" y1={profileY + scaledHeight} x2="16" y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
-        <polygon points={`12,${profileY} 10,${profileY + 5} 14,${profileY + 5}`} fill="#0066cc" />
-        <polygon points={`12,${profileY + scaledHeight} 10,${profileY + scaledHeight - 5} 14,${profileY + scaledHeight - 5}`} fill="#0066cc" />
+        {/* Левый размер высоты */}
+        <line x1="15" y1={profileY} x2="15" y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
+        <line x1="10" y1={profileY} x2="20" y2={profileY} stroke="#0066cc" strokeWidth="1" />
+        <line x1="10" y1={profileY + scaledHeight} x2="20" y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
+        <polygon points={`15,${profileY} 13,${profileY + 4} 17,${profileY + 4}`} fill="#0066cc" />
+        <polygon points={`15,${profileY + scaledHeight} 13,${profileY + scaledHeight - 4} 17,${profileY + scaledHeight - 4}`} fill="#0066cc" />
         <text 
-          x="6" 
+          x="8" 
           y={profileY + scaledHeight / 2} 
           fontSize="8" 
           fill="#0066cc" 
           textAnchor="middle" 
-          transform={`rotate(-90, 6, ${profileY + scaledHeight / 2})`}
+          transform={`rotate(-90, 8, ${profileY + scaledHeight / 2})`}
         >
           {height} мм
         </text>
 
-        {/* Right height dimension */}
-        <line x1={viewBoxWidth - 12} y1={profileY} x2={viewBoxWidth - 12} y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
-        <line x1={viewBoxWidth - 16} y1={profileY} x2={viewBoxWidth - 8} y2={profileY} stroke="#0066cc" strokeWidth="1" />
-        <line x1={viewBoxWidth - 16} y1={profileY + scaledHeight} x2={viewBoxWidth - 8} y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
-        <polygon points={`${viewBoxWidth - 12},${profileY} ${viewBoxWidth - 14},${profileY + 5} ${viewBoxWidth - 10},${profileY + 5}`} fill="#0066cc" />
-        <polygon points={`${viewBoxWidth - 12},${profileY + scaledHeight} ${viewBoxWidth - 14},${profileY + scaledHeight - 5} ${viewBoxWidth - 10},${profileY + scaledHeight - 5}`} fill="#0066cc" />
+        {/* Правый размер высоты */}
+        <line x1={viewBoxWidth - 15} y1={profileY} x2={viewBoxWidth - 15} y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
+        <line x1={viewBoxWidth - 20} y1={profileY} x2={viewBoxWidth - 10} y2={profileY} stroke="#0066cc" strokeWidth="1" />
+        <line x1={viewBoxWidth - 20} y1={profileY + scaledHeight} x2={viewBoxWidth - 10} y2={profileY + scaledHeight} stroke="#0066cc" strokeWidth="1" />
+        <polygon points={`${viewBoxWidth - 15},${profileY} ${viewBoxWidth - 17},${profileY + 4} ${viewBoxWidth - 13},${profileY + 4}`} fill="#0066cc" />
+        <polygon points={`${viewBoxWidth - 15},${profileY + scaledHeight} ${viewBoxWidth - 17},${profileY + scaledHeight - 4} ${viewBoxWidth - 13},${profileY + scaledHeight - 4}`} fill="#0066cc" />
         <text 
-          x={viewBoxWidth - 6} 
+          x={viewBoxWidth - 8} 
           y={profileY + scaledHeight / 2} 
           fontSize="8" 
           fill="#0066cc" 
           textAnchor="middle" 
-          transform={`rotate(90, ${viewBoxWidth - 6}, ${profileY + scaledHeight / 2})`}
+          transform={`rotate(90, ${viewBoxWidth - 8}, ${profileY + scaledHeight / 2})`}
         >
           {height} мм
         </text>
 
-        {/* Three T-profiles */}
+        {/* U-образные профили */}
         {[0, 1, 2].map((i) => {
           const x = startX + i * (scaledWidth + scaledGap);
           return (
             <g key={i}>
-              {/* Top flange */}
+              {/* Левая стенка U-профиля */}
               <rect 
                 x={x} 
                 y={profileY} 
-                width={scaledWidth} 
-                height={flangeHeight} 
-                fill="none" 
-                stroke="#333" 
-                strokeWidth="1.5" 
-              />
-              {/* Stem */}
-              <rect 
-                x={x + (scaledWidth - stemWidth) / 2} 
-                y={profileY} 
-                width={stemWidth} 
+                width={wallThickness} 
                 height={scaledHeight} 
-                fill="none" 
+                fill="#666"
                 stroke="#333" 
-                strokeWidth="1.5" 
+                strokeWidth="0.5" 
               />
-              {/* Bottom flange */}
+              {/* Правая стенка U-профиля */}
+              <rect 
+                x={x + scaledWidth - wallThickness} 
+                y={profileY} 
+                width={wallThickness} 
+                height={scaledHeight} 
+                fill="#666"
+                stroke="#333" 
+                strokeWidth="0.5" 
+              />
+              {/* Дно U-профиля */}
               <rect 
                 x={x} 
-                y={profileY + scaledHeight - flangeHeight} 
+                y={profileY + scaledHeight - wallThickness} 
                 width={scaledWidth} 
-                height={flangeHeight} 
-                fill="none" 
+                height={wallThickness} 
+                fill="#666"
                 stroke="#333" 
-                strokeWidth="1.5" 
+                strokeWidth="0.5" 
+              />
+              {/* Внутренняя часть (для визуализации) */}
+              <rect 
+                x={x + wallThickness} 
+                y={profileY} 
+                width={scaledWidth - 2 * wallThickness} 
+                height={scaledHeight - wallThickness} 
+                fill="#f5f5f5"
+                stroke="none" 
               />
             </g>
           );
         })}
 
-        {/* Bottom dimensions */}
-        {/* Profile 1 width */}
+        {/* Нижние размеры */}
+        {/* Ширина первого профиля */}
         <line x1={startX} y1={profileY + scaledHeight + 8} x2={startX} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + scaledWidth} y1={profileY + scaledHeight + 8} x2={startX + scaledWidth} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX} y1={profileY + scaledHeight + 11} x2={startX + scaledWidth} y2={profileY + scaledHeight + 11} stroke="#0066cc" strokeWidth="1" />
-        <text x={startX + scaledWidth / 2} y={profileY + scaledHeight + 22} fontSize="7" fill="#0066cc" textAnchor="middle">{width} мм</text>
+        <polygon points={`${startX},${profileY + scaledHeight + 11} ${startX + 4},${profileY + scaledHeight + 9} ${startX + 4},${profileY + scaledHeight + 13}`} fill="#0066cc" />
+        <polygon points={`${startX + scaledWidth},${profileY + scaledHeight + 11} ${startX + scaledWidth - 4},${profileY + scaledHeight + 9} ${startX + scaledWidth - 4},${profileY + scaledHeight + 13}`} fill="#0066cc" />
+        <text x={startX + scaledWidth / 2} y={profileY + scaledHeight + 23} fontSize="7" fill="#0066cc" textAnchor="middle">{width}</text>
 
-        {/* Gap 1 */}
+        {/* Зазор 1 */}
         <line x1={startX + scaledWidth} y1={profileY + scaledHeight + 8} x2={startX + scaledWidth} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + scaledWidth + scaledGap} y1={profileY + scaledHeight + 8} x2={startX + scaledWidth + scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + scaledWidth} y1={profileY + scaledHeight + 11} x2={startX + scaledWidth + scaledGap} y2={profileY + scaledHeight + 11} stroke="#0066cc" strokeWidth="1" />
-        <text x={startX + scaledWidth + scaledGap / 2} y={profileY + scaledHeight + 22} fontSize="7" fill="#0066cc" textAnchor="middle">{gap} мм</text>
+        <text x={startX + scaledWidth + scaledGap / 2} y={profileY + scaledHeight + 23} fontSize="7" fill="#0066cc" textAnchor="middle">{gap}</text>
 
-        {/* Profile 2 width */}
+        {/* Ширина второго профиля */}
         <line x1={startX + scaledWidth + scaledGap} y1={profileY + scaledHeight + 8} x2={startX + scaledWidth + scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + 2 * scaledWidth + scaledGap} y1={profileY + scaledHeight + 8} x2={startX + 2 * scaledWidth + scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + scaledWidth + scaledGap} y1={profileY + scaledHeight + 11} x2={startX + 2 * scaledWidth + scaledGap} y2={profileY + scaledHeight + 11} stroke="#0066cc" strokeWidth="1" />
-        <text x={startX + 1.5 * scaledWidth + scaledGap} y={profileY + scaledHeight + 22} fontSize="7" fill="#0066cc" textAnchor="middle">{width} мм</text>
+        <text x={startX + 1.5 * scaledWidth + scaledGap} y={profileY + scaledHeight + 23} fontSize="7" fill="#0066cc" textAnchor="middle">{width}</text>
 
-        {/* Gap 2 */}
+        {/* Зазор 2 */}
         <line x1={startX + 2 * scaledWidth + scaledGap} y1={profileY + scaledHeight + 8} x2={startX + 2 * scaledWidth + scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + 2 * scaledWidth + 2 * scaledGap} y1={profileY + scaledHeight + 8} x2={startX + 2 * scaledWidth + 2 * scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + 2 * scaledWidth + scaledGap} y1={profileY + scaledHeight + 11} x2={startX + 2 * scaledWidth + 2 * scaledGap} y2={profileY + scaledHeight + 11} stroke="#0066cc" strokeWidth="1" />
-        <text x={startX + 2 * scaledWidth + 1.5 * scaledGap} y={profileY + scaledHeight + 22} fontSize="7" fill="#0066cc" textAnchor="middle">{gap} мм</text>
+        <text x={startX + 2 * scaledWidth + 1.5 * scaledGap} y={profileY + scaledHeight + 23} fontSize="7" fill="#0066cc" textAnchor="middle">{gap}</text>
 
-        {/* Profile 3 width */}
+        {/* Ширина третьего профиля */}
         <line x1={startX + 2 * scaledWidth + 2 * scaledGap} y1={profileY + scaledHeight + 8} x2={startX + 2 * scaledWidth + 2 * scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + 3 * scaledWidth + 2 * scaledGap} y1={profileY + scaledHeight + 8} x2={startX + 3 * scaledWidth + 2 * scaledGap} y2={profileY + scaledHeight + 14} stroke="#0066cc" strokeWidth="1" />
         <line x1={startX + 2 * scaledWidth + 2 * scaledGap} y1={profileY + scaledHeight + 11} x2={startX + 3 * scaledWidth + 2 * scaledGap} y2={profileY + scaledHeight + 11} stroke="#0066cc" strokeWidth="1" />
-        <text x={startX + 2.5 * scaledWidth + 2 * scaledGap} y={profileY + scaledHeight + 22} fontSize="7" fill="#0066cc" textAnchor="middle">{width} мм</text>
+        <text x={startX + 2.5 * scaledWidth + 2 * scaledGap} y={profileY + scaledHeight + 23} fontSize="7" fill="#0066cc" textAnchor="middle">{width}</text>
+
+        {/* Общий модуль */}
+        <line x1={startX} y1={profileY + scaledHeight + 30} x2={startX} y2={profileY + scaledHeight + 36} stroke="#cc6600" strokeWidth="1" />
+        <line x1={startX + scaledWidth + scaledGap} y1={profileY + scaledHeight + 30} x2={startX + scaledWidth + scaledGap} y2={profileY + scaledHeight + 36} stroke="#cc6600" strokeWidth="1" />
+        <line x1={startX} y1={profileY + scaledHeight + 33} x2={startX + scaledWidth + scaledGap} y2={profileY + scaledHeight + 33} stroke="#cc6600" strokeWidth="1" />
+        <text x={startX + (scaledWidth + scaledGap) / 2} y={profileY + scaledHeight + 43} fontSize="7" fill="#cc6600" textAnchor="middle">модуль {width + gap}</text>
       </svg>
-      <p className="text-[9px] text-gray-500 mt-1">Профиль V{width}x{height}</p>
+      <p className="text-[9px] text-gray-500 mt-1">Профиль V-{width}/{height}</p>
     </div>
   );
 };
