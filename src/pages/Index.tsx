@@ -7,6 +7,7 @@ import { TemplatesPage } from '@/pages/TemplatesPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
 import { CalculatorPage } from '@/pages/CalculatorPage';
 import { DocumentsPage } from '@/pages/DocumentsPage';
+import { LiveDocumentEditor } from '@/pages/LiveDocumentEditor';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Project, Template, Material } from '@/types';
 
@@ -155,6 +156,7 @@ const Index: React.FC = () => {
             }
           />
           <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/documents/editor" element={<LiveDocumentEditor />} />
           <Route
             path="/project/:id"
             element={
