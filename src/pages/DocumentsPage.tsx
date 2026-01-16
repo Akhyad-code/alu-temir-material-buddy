@@ -19,8 +19,6 @@ import {
   Receipt, 
   Plus, 
   Printer, 
-  Download,
-  Eye,
   Edit,
   Trash2,
   Copy,
