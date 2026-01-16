@@ -43,7 +43,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
           top: '270px', 
           left: '20px', 
           right: '20px', 
-          bottom: '85px',
+          bottom: '110px',
           zIndex: 2,
         }} 
       />
@@ -118,7 +118,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         )}
         
         {/* Spacer to push content up from footer */}
-        <div className="h-[100px]" />
+        <div className="h-[120px]" />
       </div>
     </div>
   );
