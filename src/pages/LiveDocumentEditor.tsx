@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { 
   FileText,
@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   Download,
   Image,
+  Save,
 } from 'lucide-react';
 import { 
   CommercialProposal, 
@@ -56,20 +57,48 @@ const createNewInvoice = (): Invoice => ({
   buyer: { name: '', bin: '', address: '', phone: '', contactPerson: '' },
   items: [],
   includeVAT: true,
-  vatRate: 16,
+  vatRate: 12,
 });
 
 export const LiveDocumentEditor: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [documents, setDocuments] = useLocalStorage<DocumentType[]>('alu-temir-documents', []);
   const previewRef = useRef<HTMLDivElement>(null);
+  
+  // Get params from URL
+  const editId = searchParams.get('edit');
+  const typeParam = searchParams.get('type');
   
   // Document state
   const [documentType, setDocumentType] = useState<'kp' | 'invoice'>('kp');
   const [currentDocument, setCurrentDocument] = useState<DocumentType>(createNewKP());
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Load document if editing
+  useEffect(() => {
+    if (editId) {
+      const docToEdit = documents.find(doc => doc.id === parseInt(editId));
+      if (docToEdit) {
+        setCurrentDocument(docToEdit);
+        setDocumentType(docToEdit.type);
+        setIsEditing(true);
+      }
+    } else if (typeParam === 'invoice') {
+      setDocumentType('invoice');
+      setCurrentDocument(createNewInvoice());
+    } else {
+      setDocumentType('kp');
+      setCurrentDocument(createNewKP());
+    }
+  }, [editId, typeParam, documents]);
   
   // Switch document type
   const handleDocumentTypeChange = (type: 'kp' | 'invoice') => {
+    if (isEditing) {
+      toast.error('Нельзя сменить тип при редактировании');
+      return;
+    }
     setDocumentType(type);
     setCurrentDocument(type === 'kp' ? createNewKP() : createNewInvoice());
   };
@@ -102,9 +131,20 @@ export const LiveDocumentEditor: React.FC = () => {
   
   // Save document
   const saveDocument = () => {
-    const updatedDoc = { ...currentDocument, id: Date.now() };
-    setDocuments([updatedDoc, ...documents]);
-    toast.success('Документ сохранён');
+    if (isEditing) {
+      // Update existing document
+      setDocuments(documents.map(doc => 
+        doc.id === currentDocument.id ? currentDocument : doc
+      ));
+      toast.success('Документ обновлён');
+    } else {
+      // Create new document
+      const newDoc = { ...currentDocument, id: Date.now() };
+      setDocuments([newDoc, ...documents]);
+      setCurrentDocument(newDoc);
+      setIsEditing(true);
+      toast.success('Документ сохранён');
+    }
   };
   
   // Print
@@ -165,6 +205,7 @@ export const LiveDocumentEditor: React.FC = () => {
               variant={documentType === 'kp' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleDocumentTypeChange('kp')}
+              disabled={isEditing}
             >
               <FileText className="h-4 w-4 mr-1" />
               КП
@@ -173,16 +214,24 @@ export const LiveDocumentEditor: React.FC = () => {
               variant={documentType === 'invoice' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleDocumentTypeChange('invoice')}
+              disabled={isEditing}
             >
               <Receipt className="h-4 w-4 mr-1" />
               Счёт
             </Button>
           </div>
+          
+          {isEditing && (
+            <span className="text-sm text-muted-foreground border-l pl-4">
+              Редактирование: {documentType === 'kp' ? 'КП' : 'Счёт'} № {currentDocument.number}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={saveDocument}>
-            Сохранить
+            <Save className="h-4 w-4 mr-2" />
+            {isEditing ? 'Обновить' : 'Сохранить'}
           </Button>
           
           {/* Download dropdown */}
