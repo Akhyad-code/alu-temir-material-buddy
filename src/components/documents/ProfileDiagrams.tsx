@@ -42,16 +42,12 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
     const w = scaledWidth;
     const h = scaledHeight;
     
-    // U-shape with Г-shaped lips (vertical then horizontal inward)
+    // Simple U-shape without lips
     return `
-      M ${x + lipWidth} ${y}
-      L ${x + lipWidth} ${y + lipHeight}
-      L ${x} ${y + lipHeight}
+      M ${x} ${y}
       L ${x} ${y + h}
       L ${x + w} ${y + h}
-      L ${x + w} ${y + lipHeight}
-      L ${x + w - lipWidth} ${y + lipHeight}
-      L ${x + w - lipWidth} ${y}
+      L ${x + w} ${y}
     `;
   };
 
