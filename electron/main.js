@@ -2,8 +2,12 @@ const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
-if (require('electron-squirrel-startup')) {
-  app.quit();
+try {
+  if (require('electron-squirrel-startup')) {
+    app.quit();
+  }
+} catch (e) {
+  // electron-squirrel-startup not available, ignore
 }
 
 let mainWindow;
@@ -14,13 +18,14 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    icon: path.join(__dirname, 'public/favicon.ico'),
+    icon: path.join(__dirname, '../public/favicon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
     },
     show: false,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#1a1a2e',
+    title: 'ALU-TEMIR Калькулятор',
   });
 
   // Remove default menu for cleaner look
@@ -28,10 +33,11 @@ function createWindow() {
 
   // Load the app
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:8080');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+    // In production, load from dist folder (one level up from electron folder)
+    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
   // Show window when ready
