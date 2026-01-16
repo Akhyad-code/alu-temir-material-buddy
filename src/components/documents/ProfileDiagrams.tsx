@@ -44,25 +44,23 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
   const startX = padding + arrowSpace;
   const startY = padding;
 
-  // Generate simple U-shaped profile outline only
+  // Generate U-shaped profile with lips pointing OUTWARD
   const generateProfilePath = (x: number) => {
     const y = startY + substrateHeight;
     const w = scaledWidth;
     const h = scaledHeight;
-    const cornerRadius = 3;
     
-    // Simple U-shape with lips
+    // U-shape with outward lips (ушки наружу)
+    // Start from left lip, go down, across bottom, up, right lip
     return `
-      M ${x + lipWidth} ${y}
-      L ${x + lipWidth} ${y + lipHeight}
+      M ${x - lipWidth} ${y}
+      L ${x - lipWidth} ${y + lipHeight}
       L ${x} ${y + lipHeight}
-      L ${x} ${y + h - cornerRadius}
-      Q ${x} ${y + h} ${x + cornerRadius} ${y + h}
-      L ${x + w - cornerRadius} ${y + h}
-      Q ${x + w} ${y + h} ${x + w} ${y + h - cornerRadius}
+      L ${x} ${y + h}
+      L ${x + w} ${y + h}
       L ${x + w} ${y + lipHeight}
-      L ${x + w - lipWidth} ${y + lipHeight}
-      L ${x + w - lipWidth} ${y}
+      L ${x + w + lipWidth} ${y + lipHeight}
+      L ${x + w + lipWidth} ${y}
     `;
   };
 
