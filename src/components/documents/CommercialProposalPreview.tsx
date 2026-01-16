@@ -1,6 +1,6 @@
 import React from 'react';
 import { CommercialProposal, formatCurrency } from '@/types/documents';
-import kpBackground from '@/assets/kp-template-clean.jpg';
+import kpBackground from '@/assets/kp-template-bg.jpg';
 import kpGradientBg from '@/assets/kp-background.jpg';
 import { ProfileDiagram, DEFAULT_DIMENSIONS } from './ProfileDiagrams';
 
@@ -17,19 +17,14 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
     <div
       id="kp-preview"
       className="bg-white text-black w-[210mm] min-h-[297mm] mx-auto shadow-xl relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${kpBackground})`,
+        backgroundSize: '210mm auto',
+        backgroundPosition: 'top center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
-      {/* Header background from template - only top portion */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-[270px]"
-        style={{
-          backgroundImage: `url(${kpBackground})`,
-          backgroundSize: '210mm auto',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
-      
-      {/* Semi-transparent gradient background image */}
+      {/* Semi-transparent gradient background image overlay */}
       <div 
         className="absolute inset-0"
         style={{
@@ -41,14 +36,14 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         }}
       />
       
-      {/* White content area below header */}
+      {/* White content area - between header and footer */}
       <div 
         className="absolute bg-white" 
         style={{ 
           top: '270px', 
-          left: 0, 
-          right: 0, 
-          bottom: 0,
+          left: '20px', 
+          right: '20px', 
+          bottom: '45px',
           zIndex: 2,
         }} 
       />
