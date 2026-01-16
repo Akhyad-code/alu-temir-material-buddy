@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { CommercialProposal, Invoice, DocumentItem, DEFAULT_COMPANY_INFO, formatCurrency } from '@/types/documents';
+import { CommercialProposal, Invoice, DocumentItem, DEFAULT_COMPANY_INFO, formatCurrency, ProfileDimensions } from '@/types/documents';
 import { Project } from '@/types';
 import { DocumentItemRow } from './DocumentItemRow';
 import { ImportFromProject } from './ImportFromProject';
+import { DEFAULT_DIMENSIONS } from './ProfileDiagrams';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Building2, User, FileText } from 'lucide-react';
+import { Plus, Building2, User, FileText, Ruler } from 'lucide-react';
 
 interface DocumentEditorProps {
   document: CommercialProposal | Invoice;
@@ -69,7 +70,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpda
   return (
     <div className="space-y-4 h-full overflow-auto p-4">
       <Tabs defaultValue="items" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${isInvoice ? 'grid-cols-3' : 'grid-cols-4'}`}>
           <TabsTrigger value="items" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Позиции
@@ -82,6 +83,12 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpda
             <User className="h-4 w-4" />
             Клиент
           </TabsTrigger>
+          {!isInvoice && (
+            <TabsTrigger value="diagram" className="flex items-center gap-2">
+              <Ruler className="h-4 w-4" />
+              Чертёж
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Items Tab */}
@@ -415,6 +422,102 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({ document, onUpda
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Diagram Tab - Only for KP */}
+        {!isInvoice && (
+          <TabsContent value="diagram" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Ruler className="h-5 w-5" />
+                  Чертёж профиля
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Показать чертёж в КП</Label>
+                  <Switch
+                    checked={(document as CommercialProposal).showDiagram || false}
+                    onCheckedChange={(checked) => {
+                      onUpdate({
+                        ...document,
+                        showDiagram: checked,
+                      } as CommercialProposal);
+                    }}
+                  />
+                </div>
+                
+                {(document as CommercialProposal).showDiagram && (
+                  <>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Ширина (мм)</Label>
+                        <Input
+                          type="number"
+                          value={(document as CommercialProposal).diagramDimensions?.width || DEFAULT_DIMENSIONS.width}
+                          onChange={(e) => {
+                            const kpDoc = document as CommercialProposal;
+                            onUpdate({
+                              ...kpDoc,
+                              diagramDimensions: {
+                                ...kpDoc.diagramDimensions || DEFAULT_DIMENSIONS,
+                                width: parseInt(e.target.value) || DEFAULT_DIMENSIONS.width,
+                              },
+                            } as CommercialProposal);
+                          }}
+                          min={10}
+                          max={200}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Высота (мм)</Label>
+                        <Input
+                          type="number"
+                          value={(document as CommercialProposal).diagramDimensions?.height || DEFAULT_DIMENSIONS.height}
+                          onChange={(e) => {
+                            const kpDoc = document as CommercialProposal;
+                            onUpdate({
+                              ...kpDoc,
+                              diagramDimensions: {
+                                ...kpDoc.diagramDimensions || DEFAULT_DIMENSIONS,
+                                height: parseInt(e.target.value) || DEFAULT_DIMENSIONS.height,
+                              },
+                            } as CommercialProposal);
+                          }}
+                          min={10}
+                          max={200}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Зазор (мм)</Label>
+                        <Input
+                          type="number"
+                          value={(document as CommercialProposal).diagramDimensions?.gap || DEFAULT_DIMENSIONS.gap}
+                          onChange={(e) => {
+                            const kpDoc = document as CommercialProposal;
+                            onUpdate({
+                              ...kpDoc,
+                              diagramDimensions: {
+                                ...kpDoc.diagramDimensions || DEFAULT_DIMENSIONS,
+                                gap: parseInt(e.target.value) || DEFAULT_DIMENSIONS.gap,
+                              },
+                            } as CommercialProposal);
+                          }}
+                          min={5}
+                          max={100}
+                        />
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Профиль V-{(document as CommercialProposal).diagramDimensions?.width || DEFAULT_DIMENSIONS.width}/
+                      {(document as CommercialProposal).diagramDimensions?.height || DEFAULT_DIMENSIONS.height}
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
