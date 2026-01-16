@@ -26,16 +26,12 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
   const scaledHeight = height * scale;
   const scaledGap = gap * scale;
   
-  // Profile wall thickness
-  const wallThickness = 2.5;
-  
   // Lip dimensions (ушки)
   const lipWidth = 8;
-  const lipHeight = 12;
-  const lipInnerCurve = 4;
+  const lipHeight = 10;
   
   // Substrate height
-  const substrateHeight = 14;
+  const substrateHeight = 12;
   
   // Calculate total SVG dimensions
   const totalProfilesWidth = profileCount * scaledWidth + (profileCount - 1) * scaledGap;
@@ -48,47 +44,26 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
   const startX = padding + arrowSpace;
   const startY = padding;
 
-  // Generate realistic U-shaped profile with curved lips (like reference image)
+  // Generate simple U-shaped profile outline only
   const generateProfilePath = (x: number) => {
     const y = startY + substrateHeight;
     const w = scaledWidth;
     const h = scaledHeight;
-    const cornerRadius = 4;
+    const cornerRadius = 3;
     
-    // Outer path of the U-shape with lips curving inward at top
-    const outerPath = `
+    // Simple U-shape with lips
+    return `
       M ${x + lipWidth} ${y}
       L ${x + lipWidth} ${y + lipHeight}
-      Q ${x + lipWidth} ${y + lipHeight + lipInnerCurve} ${x + lipWidth - lipInnerCurve} ${y + lipHeight + lipInnerCurve}
-      L ${x} ${y + lipHeight + lipInnerCurve}
+      L ${x} ${y + lipHeight}
       L ${x} ${y + h - cornerRadius}
       Q ${x} ${y + h} ${x + cornerRadius} ${y + h}
       L ${x + w - cornerRadius} ${y + h}
       Q ${x + w} ${y + h} ${x + w} ${y + h - cornerRadius}
-      L ${x + w} ${y + lipHeight + lipInnerCurve}
-      L ${x + w - lipWidth + lipInnerCurve} ${y + lipHeight + lipInnerCurve}
-      Q ${x + w - lipWidth} ${y + lipHeight + lipInnerCurve} ${x + w - lipWidth} ${y + lipHeight}
+      L ${x + w} ${y + lipHeight}
+      L ${x + w - lipWidth} ${y + lipHeight}
       L ${x + w - lipWidth} ${y}
     `;
-    
-    // Inner path (cutout) - creates the hollow U shape
-    const innerX = x + wallThickness;
-    const innerW = w - wallThickness * 2;
-    const innerH = h - wallThickness;
-    const innerCornerRadius = 3;
-    
-    const innerPath = `
-      M ${innerX + lipWidth - wallThickness} ${y + lipHeight + lipInnerCurve + wallThickness}
-      L ${innerX} ${y + lipHeight + lipInnerCurve + wallThickness}
-      L ${innerX} ${y + innerH - innerCornerRadius}
-      Q ${innerX} ${y + innerH} ${innerX + innerCornerRadius} ${y + innerH}
-      L ${innerX + innerW - innerCornerRadius} ${y + innerH}
-      Q ${innerX + innerW} ${y + innerH} ${innerX + innerW} ${y + innerH - innerCornerRadius}
-      L ${innerX + innerW} ${y + lipHeight + lipInnerCurve + wallThickness}
-      L ${x + w - lipWidth + wallThickness} ${y + lipHeight + lipInnerCurve + wallThickness}
-    `;
-    
-    return { outerPath, innerPath };
   };
 
   return (
@@ -96,52 +71,33 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
       <svg 
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full max-w-3xl"
-        style={{ minHeight: '200px' }}
+        style={{ minHeight: '180px' }}
       >
-        <defs>
-          {/* Substrate gradient */}
-          <linearGradient id="substrateGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#f8f8f8" />
-            <stop offset="50%" stopColor="#eeeeee" />
-            <stop offset="100%" stopColor="#e0e0e0" />
-          </linearGradient>
-        </defs>
+        {/* White background */}
+        <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="#ffffff" />
 
-        {/* Background - light blue-gray like reference */}
-        <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="#e8eef4" />
-        
-        {/* Dark header band */}
-        <rect 
-          x="0" 
-          y="0" 
-          width={svgWidth} 
-          height={startY + substrateHeight / 2} 
-          fill="#4a5568"
+        {/* Substrate line (простая линия основания) */}
+        <line
+          x1={startX - 10}
+          y1={startY + substrateHeight}
+          x2={startX + totalProfilesWidth + 10}
+          y2={startY + substrateHeight}
+          stroke="#1a1a1a"
+          strokeWidth="2"
         />
 
-        {/* Substrate (основание сверху) */}
-        <rect
-          x={startX - 15}
-          y={startY}
-          width={totalProfilesWidth + 30}
-          height={substrateHeight}
-          fill="url(#substrateGradient)"
-          stroke="#bbb"
-          strokeWidth="0.5"
-        />
-
-        {/* Profiles */}
+        {/* Profiles - только жирный контур */}
         {Array.from({ length: profileCount }).map((_, i) => {
           const x = startX + i * (scaledWidth + scaledGap);
-          const { outerPath } = generateProfilePath(x);
           return (
             <path
               key={i}
-              d={outerPath}
-              fill="#ffffff"
+              d={generateProfilePath(x)}
+              fill="none"
               stroke="#1a1a1a"
-              strokeWidth="1.5"
+              strokeWidth="2.5"
               strokeLinejoin="round"
+              strokeLinecap="round"
             />
           );
         })}
@@ -240,7 +196,7 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
           </text>
         </g>
 
-        {/* Bottom width dimensions - alternating width and gap */}
+        {/* Bottom width dimensions */}
         {Array.from({ length: profileCount }).map((_, i) => {
           const x = startX + i * (scaledWidth + scaledGap);
           const y = startY + substrateHeight + scaledHeight + 20;
