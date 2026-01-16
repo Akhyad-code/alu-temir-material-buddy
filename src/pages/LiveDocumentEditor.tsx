@@ -82,6 +82,16 @@ export const LiveDocumentEditor: React.FC = () => {
     }));
   };
   
+  // Update item
+  const handleUpdateItem = (id: number, updates: Partial<DocumentItem>) => {
+    setCurrentDocument(prev => ({
+      ...prev,
+      items: prev.items.map(item => 
+        item.id === id ? { ...item, ...updates } : item
+      ),
+    }));
+  };
+  
   // Delete item
   const handleDeleteItem = (id: number) => {
     setCurrentDocument(prev => ({
@@ -215,6 +225,7 @@ export const LiveDocumentEditor: React.FC = () => {
               items={currentDocument.items}
               total={total}
               onDeleteItem={handleDeleteItem}
+              onUpdateItem={handleUpdateItem}
             />
             
             {/* Profile Diagram Settings (only for KP) */}
