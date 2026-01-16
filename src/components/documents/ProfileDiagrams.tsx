@@ -1,9 +1,9 @@
 import React from 'react';
 
 export interface ProfileDimensions {
-  width: number;   // Ширина рейки (26, 59, 93 мм и т.д.)
-  height: number;  // Высота рейки (43, 84, 100 мм и т.д.)
-  gap: number;     // Зазор между рейками
+  width: number;
+  height: number;
+  gap: number;
 }
 
 export const DEFAULT_DIMENSIONS: ProfileDimensions = {
@@ -12,100 +12,172 @@ export const DEFAULT_DIMENSIONS: ProfileDimensions = {
   gap: 40,
 };
 
-// Схема профиля (вид спереди) как раньше, но форма U-профиля как на фото
 interface ProfileDiagramProps {
   dimensions: ProfileDimensions;
 }
 
 export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) => {
   const { width, height, gap } = dimensions;
-  const module = width + gap;
+  
+  // SVG dimensions and scaling
+  const profileCount = 3;
+  const scale = 2.5;
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
+  const scaledGap = gap * scale;
+  
+  // Lip/ear dimensions (proportional to profile)
+  const lipWidth = 6;
+  const lipHeight = 8;
+  const wallThickness = 3;
+  
+  // Substrate (основание) height
+  const substrateHeight = 12;
+  
+  // Calculate total SVG dimensions
+  const totalProfilesWidth = profileCount * scaledWidth + (profileCount - 1) * scaledGap;
+  const padding = 60;
+  const arrowSpace = 40;
+  const svgWidth = totalProfilesWidth + padding * 2 + arrowSpace * 2;
+  const svgHeight = scaledHeight + substrateHeight + padding * 2 + arrowSpace;
+  
+  // Starting position
+  const startX = padding + arrowSpace;
+  const startY = padding;
 
-  const profilesCount = 3;
-
-  // Scale to fit different sizes nicely
-  const totalRealWidth = profilesCount * width + (profilesCount - 1) * gap;
-  const fitWidth = 240; // px in viewBox units
-  const scale = Math.min(1, fitWidth / totalRealWidth);
-
-  const scaledWidth = Math.max(18, width * scale);
-  const scaledGap = Math.max(10, gap * scale);
-  const scaledHeight = Math.max(32, Math.min(86, height * scale * 1.15));
-
-  const wallThickness = Math.max(3, Math.min(6, scaledWidth * 0.1));
-  const bottomThickness = wallThickness;
-  const innerInsetTop = Math.max(2, wallThickness * 0.5);
-
-  const profileY = 20;
-  const startX = 70;
-  const totalWidth = profilesCount * scaledWidth + (profilesCount - 1) * scaledGap;
-
-  const viewBoxWidth = startX + totalWidth + 70;
-  const viewBoxHeight = profileY + scaledHeight + 95;
-
-  const leftDimX = 25;
-  const rightDimX = startX + totalWidth + 25;
-
-  const yDim = profileY + scaledHeight + 26;
-
-  // Bottom dimension segments: width, gap, width, gap, width
-  const segments = [
-    { kind: 'width' as const, value: width, length: scaledWidth },
-    { kind: 'gap' as const, value: gap, length: scaledGap },
-    { kind: 'width' as const, value: width, length: scaledWidth },
-    { kind: 'gap' as const, value: gap, length: scaledGap },
-    { kind: 'width' as const, value: width, length: scaledWidth },
-  ];
+  // Generate U-shaped profile path with lips
+  const generateProfilePath = (x: number) => {
+    const y = startY + substrateHeight;
+    const w = scaledWidth;
+    const h = scaledHeight;
+    
+    // U-shape with inward lips at top
+    return `
+      M ${x} ${y}
+      L ${x} ${y + h}
+      L ${x + w} ${y + h}
+      L ${x + w} ${y}
+      L ${x + w - lipWidth} ${y}
+      L ${x + w - lipWidth} ${y + lipHeight}
+      L ${x + w - lipWidth - wallThickness} ${y + lipHeight}
+      L ${x + w - lipWidth - wallThickness} ${y + wallThickness}
+      L ${x + lipWidth + wallThickness} ${y + wallThickness}
+      L ${x + lipWidth + wallThickness} ${y + lipHeight}
+      L ${x + lipWidth} ${y + lipHeight}
+      L ${x + lipWidth} ${y}
+      Z
+    `;
+  };
 
   return (
-    <div className="flex flex-col items-center">
-      <svg
-        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-        className="w-full max-w-[520px] h-auto"
-        style={{ minHeight: '140px' }}
+    <div className="w-full flex flex-col items-center">
+      <svg 
+        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+        className="w-full max-w-2xl"
+        style={{ minHeight: '180px' }}
       >
         <defs>
-          {/* Metal look */}
-          <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9ca3af" />
-            <stop offset="30%" stopColor="#e5e7eb" />
-            <stop offset="50%" stopColor="#f3f4f6" />
-            <stop offset="70%" stopColor="#e5e7eb" />
-            <stop offset="100%" stopColor="#9ca3af" />
+          {/* Light gradient for substrate */}
+          <linearGradient id="substrateGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#f5f5f5" />
+            <stop offset="50%" stopColor="#e8e8e8" />
+            <stop offset="100%" stopColor="#d0d0d0" />
           </linearGradient>
-          <linearGradient id="metalGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#d1d5db" />
-            <stop offset="100%" stopColor="#6b7280" />
+          
+          {/* Profile fill - clean white */}
+          <linearGradient id="profileFill" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#fafafa" />
           </linearGradient>
-
-          {/* Wood insert */}
-          <linearGradient id="woodGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#a0522d" />
-            <stop offset="35%" stopColor="#8b4513" />
-            <stop offset="70%" stopColor="#a0522d" />
-            <stop offset="100%" stopColor="#6b3000" />
-          </linearGradient>
-
-          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.15" />
-          </filter>
         </defs>
 
+        {/* Background */}
+        <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="#f0f4f8" />
+        
+        {/* Dark band at top */}
+        <rect 
+          x="0" 
+          y="0" 
+          width={svgWidth} 
+          height={startY + substrateHeight / 2} 
+          fill="#4a5568"
+        />
+
+        {/* Substrate (основание) */}
+        <rect
+          x={startX - 10}
+          y={startY}
+          width={totalProfilesWidth + 20}
+          height={substrateHeight}
+          fill="url(#substrateGradient)"
+          stroke="#999"
+          strokeWidth="0.5"
+        />
+
+        {/* Profiles */}
+        {Array.from({ length: profileCount }).map((_, i) => {
+          const x = startX + i * (scaledWidth + scaledGap);
+          return (
+            <path
+              key={i}
+              d={generateProfilePath(x)}
+              fill="url(#profileFill)"
+              stroke="#1a1a1a"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          );
+        })}
+
+        {/* Dimension lines and labels */}
         {/* Left height dimension */}
         <g>
-          <line x1={leftDimX} y1={profileY} x2={leftDimX} y2={profileY + scaledHeight} stroke="#1a3a5c" strokeWidth="1" />
-          <line x1={leftDimX - 6} y1={profileY} x2={leftDimX + 6} y2={profileY} stroke="#1a3a5c" strokeWidth="1" />
-          <line x1={leftDimX - 6} y1={profileY + scaledHeight} x2={leftDimX + 6} y2={profileY + scaledHeight} stroke="#1a3a5c" strokeWidth="1" />
-          <polygon points={`${leftDimX},${profileY} ${leftDimX - 3},${profileY + 7} ${leftDimX + 3},${profileY + 7}`} fill="#1a3a5c" />
-          <polygon points={`${leftDimX},${profileY + scaledHeight} ${leftDimX - 3},${profileY + scaledHeight - 7} ${leftDimX + 3},${profileY + scaledHeight - 7}`} fill="#1a3a5c" />
-          <text
-            x={leftDimX - 13}
-            y={profileY + scaledHeight / 2}
-            fontSize="9"
-            fill="#1a3a5c"
-            fontWeight="600"
+          <line 
+            x1={startX - 35} 
+            y1={startY + substrateHeight} 
+            x2={startX - 35} 
+            y2={startY + substrateHeight + scaledHeight}
+            stroke="#0088cc"
+            strokeWidth="1"
+            markerStart="url(#arrowUp)"
+            markerEnd="url(#arrowDown)"
+          />
+          {/* Top arrow */}
+          <polygon
+            points={`${startX - 35},${startY + substrateHeight} ${startX - 38},${startY + substrateHeight + 6} ${startX - 32},${startY + substrateHeight + 6}`}
+            fill="#0088cc"
+          />
+          {/* Bottom arrow */}
+          <polygon
+            points={`${startX - 35},${startY + substrateHeight + scaledHeight} ${startX - 38},${startY + substrateHeight + scaledHeight - 6} ${startX - 32},${startY + substrateHeight + scaledHeight - 6}`}
+            fill="#0088cc"
+          />
+          {/* Extension lines */}
+          <line 
+            x1={startX - 40} 
+            y1={startY + substrateHeight} 
+            x2={startX - 5} 
+            y2={startY + substrateHeight}
+            stroke="#0088cc"
+            strokeWidth="0.5"
+          />
+          <line 
+            x1={startX - 40} 
+            y1={startY + substrateHeight + scaledHeight} 
+            x2={startX - 5} 
+            y2={startY + substrateHeight + scaledHeight}
+            stroke="#0088cc"
+            strokeWidth="0.5"
+          />
+          {/* Label */}
+          <text 
+            x={startX - 50} 
+            y={startY + substrateHeight + scaledHeight / 2 + 4}
+            fill="#0088cc"
+            fontSize="11"
+            fontWeight="500"
             textAnchor="middle"
-            transform={`rotate(-90, ${leftDimX - 13}, ${profileY + scaledHeight / 2})`}
+            transform={`rotate(-90, ${startX - 50}, ${startY + substrateHeight + scaledHeight / 2})`}
           >
             {height} мм
           </text>
@@ -113,170 +185,167 @@ export const ProfileDiagram: React.FC<ProfileDiagramProps> = ({ dimensions }) =>
 
         {/* Right height dimension */}
         <g>
-          <line x1={rightDimX} y1={profileY} x2={rightDimX} y2={profileY + scaledHeight} stroke="#1a3a5c" strokeWidth="1" />
-          <line x1={rightDimX - 6} y1={profileY} x2={rightDimX + 6} y2={profileY} stroke="#1a3a5c" strokeWidth="1" />
-          <line x1={rightDimX - 6} y1={profileY + scaledHeight} x2={rightDimX + 6} y2={profileY + scaledHeight} stroke="#1a3a5c" strokeWidth="1" />
-          <polygon points={`${rightDimX},${profileY} ${rightDimX - 3},${profileY + 7} ${rightDimX + 3},${profileY + 7}`} fill="#1a3a5c" />
-          <polygon points={`${rightDimX},${profileY + scaledHeight} ${rightDimX - 3},${profileY + scaledHeight - 7} ${rightDimX + 3},${profileY + scaledHeight - 7}`} fill="#1a3a5c" />
-          <text
-            x={rightDimX + 13}
-            y={profileY + scaledHeight / 2}
-            fontSize="9"
-            fill="#1a3a5c"
-            fontWeight="600"
+          <line 
+            x1={startX + totalProfilesWidth + 35} 
+            y1={startY + substrateHeight} 
+            x2={startX + totalProfilesWidth + 35} 
+            y2={startY + substrateHeight + scaledHeight}
+            stroke="#0088cc"
+            strokeWidth="1"
+          />
+          {/* Top arrow */}
+          <polygon
+            points={`${startX + totalProfilesWidth + 35},${startY + substrateHeight} ${startX + totalProfilesWidth + 32},${startY + substrateHeight + 6} ${startX + totalProfilesWidth + 38},${startY + substrateHeight + 6}`}
+            fill="#0088cc"
+          />
+          {/* Bottom arrow */}
+          <polygon
+            points={`${startX + totalProfilesWidth + 35},${startY + substrateHeight + scaledHeight} ${startX + totalProfilesWidth + 32},${startY + substrateHeight + scaledHeight - 6} ${startX + totalProfilesWidth + 38},${startY + substrateHeight + scaledHeight - 6}`}
+            fill="#0088cc"
+          />
+          {/* Extension lines */}
+          <line 
+            x1={startX + totalProfilesWidth + 5} 
+            y1={startY + substrateHeight} 
+            x2={startX + totalProfilesWidth + 40} 
+            y2={startY + substrateHeight}
+            stroke="#0088cc"
+            strokeWidth="0.5"
+          />
+          <line 
+            x1={startX + totalProfilesWidth + 5} 
+            y1={startY + substrateHeight + scaledHeight} 
+            x2={startX + totalProfilesWidth + 40} 
+            y2={startY + substrateHeight + scaledHeight}
+            stroke="#0088cc"
+            strokeWidth="0.5"
+          />
+          {/* Label */}
+          <text 
+            x={startX + totalProfilesWidth + 50} 
+            y={startY + substrateHeight + scaledHeight / 2 + 4}
+            fill="#0088cc"
+            fontSize="11"
+            fontWeight="500"
             textAnchor="middle"
-            transform={`rotate(90, ${rightDimX + 13}, ${profileY + scaledHeight / 2})`}
+            transform={`rotate(90, ${startX + totalProfilesWidth + 50}, ${startY + substrateHeight + scaledHeight / 2})`}
           >
             {height} мм
           </text>
         </g>
 
-        {/* Front view: three U-profiles */}
-        {[0, 1, 2].map((i) => {
+        {/* Bottom width dimensions */}
+        {Array.from({ length: profileCount }).map((_, i) => {
           const x = startX + i * (scaledWidth + scaledGap);
-          const innerX = x + wallThickness;
-          const innerW = scaledWidth - 2 * wallThickness;
-          const innerY = profileY + innerInsetTop;
-          const innerH = scaledHeight - bottomThickness - innerInsetTop;
-
+          const y = startY + substrateHeight + scaledHeight + 25;
+          
           return (
-            <g key={i} filter="url(#softShadow)">
-              {/* Inner wood */}
-              <rect
-                x={innerX}
-                y={innerY}
-                width={innerW}
-                height={innerH}
-                rx="1"
-                fill="url(#woodGradient)"
-                stroke="#5a3000"
-                strokeWidth="0.4"
-              />
-
-              {/* Left wall */}
-              <rect
-                x={x}
-                y={profileY}
-                width={wallThickness}
-                height={scaledHeight}
-                fill="url(#metalGradient)"
-                stroke="#6b7280"
-                strokeWidth="0.5"
-              />
-
-              {/* Right wall */}
-              <rect
-                x={x + scaledWidth - wallThickness}
-                y={profileY}
-                width={wallThickness}
-                height={scaledHeight}
-                fill="url(#metalGradient)"
-                stroke="#6b7280"
-                strokeWidth="0.5"
-              />
-
-              {/* Bottom */}
-              <rect
-                x={x}
-                y={profileY + scaledHeight - bottomThickness}
-                width={scaledWidth}
-                height={bottomThickness}
-                fill="url(#metalGradientDark)"
-                stroke="#6b7280"
-                strokeWidth="0.5"
-              />
-
-              {/* Highlights */}
-              <line
-                x1={x + 1.2}
-                y1={profileY + 2}
-                x2={x + 1.2}
-                y2={profileY + scaledHeight - 2}
-                stroke="rgba(255,255,255,0.45)"
+            <g key={`width-${i}`}>
+              {/* Width dimension line */}
+              <line 
+                x1={x} 
+                y1={y} 
+                x2={x + scaledWidth} 
+                y2={y}
+                stroke="#0088cc"
                 strokeWidth="1"
               />
-              <line
-                x1={x + scaledWidth - 1.2}
-                y1={profileY + 2}
-                x2={x + scaledWidth - 1.2}
-                y2={profileY + scaledHeight - 2}
-                stroke="rgba(0,0,0,0.08)"
-                strokeWidth="1"
+              {/* Left arrow */}
+              <polygon
+                points={`${x},${y} ${x + 6},${y - 3} ${x + 6},${y + 3}`}
+                fill="#0088cc"
               />
+              {/* Right arrow */}
+              <polygon
+                points={`${x + scaledWidth},${y} ${x + scaledWidth - 6},${y - 3} ${x + scaledWidth - 6},${y + 3}`}
+                fill="#0088cc"
+              />
+              {/* Extension lines */}
+              <line 
+                x1={x} 
+                y1={startY + substrateHeight + scaledHeight + 5} 
+                x2={x} 
+                y2={y + 5}
+                stroke="#0088cc"
+                strokeWidth="0.5"
+              />
+              <line 
+                x1={x + scaledWidth} 
+                y1={startY + substrateHeight + scaledHeight + 5} 
+                x2={x + scaledWidth} 
+                y2={y + 5}
+                stroke="#0088cc"
+                strokeWidth="0.5"
+              />
+              {/* Label */}
+              <text 
+                x={x + scaledWidth / 2} 
+                y={y - 6}
+                fill="#0088cc"
+                fontSize="11"
+                fontWeight="500"
+                textAnchor="middle"
+              >
+                {width} мм
+              </text>
             </g>
           );
         })}
 
-        {/* Bottom dimensions: widths and gaps */}
-        <g>
-          {(() => {
-            let cursor = startX;
-            return segments.map((s, idx) => {
-              const x1 = cursor;
-              const x2 = cursor + s.length;
-              cursor = x2;
-
-              const stroke = s.kind === 'gap' ? '#c9a54a' : '#1a3a5c';
-              const dashed = s.kind === 'gap';
-
-              return (
-                <g key={idx}>
-                  <line x1={x1} y1={yDim - 8} x2={x1} y2={yDim + 6} stroke={stroke} strokeWidth="1" />
-                  <line x1={x2} y1={yDim - 8} x2={x2} y2={yDim + 6} stroke={stroke} strokeWidth="1" />
-                  <line
-                    x1={x1}
-                    y1={yDim}
-                    x2={x2}
-                    y2={yDim}
-                    stroke={stroke}
-                    strokeWidth="1"
-                    strokeDasharray={dashed ? '3,2' : undefined}
-                  />
-                  <text
-                    x={(x1 + x2) / 2}
-                    y={yDim + 18}
-                    fontSize="9"
-                    fill={stroke}
-                    fontWeight="600"
-                    textAnchor="middle"
-                  >
-                    {s.value}
-                  </text>
-                </g>
-              );
-            });
-          })()}
-        </g>
-
-        {/* Module (width + gap) */}
-        <g>
-          {(() => {
-            const x1 = startX;
-            const x2 = startX + scaledWidth + scaledGap;
-            const y = yDim + 30;
-            return (
-              <g>
-                <line x1={x1} y1={y - 8} x2={x1} y2={y + 6} stroke="#1a3a5c" strokeWidth="1" />
-                <line x1={x2} y1={y - 8} x2={x2} y2={y + 6} stroke="#1a3a5c" strokeWidth="1" />
-                <line x1={x1} y1={y} x2={x2} y2={y} stroke="#1a3a5c" strokeWidth="1.5" />
-                <polygon points={`${x1},${y} ${x1 + 6},${y - 2} ${x1 + 6},${y + 2}`} fill="#1a3a5c" />
-                <polygon points={`${x2},${y} ${x2 - 6},${y - 2} ${x2 - 6},${y + 2}`} fill="#1a3a5c" />
-                <text x={(x1 + x2) / 2} y={y + 16} fontSize="9" fill="#1a3a5c" fontWeight="700" textAnchor="middle">
-                  {module}
-                </text>
-                <text x={(x1 + x2) / 2} y={y + 28} fontSize="8" fill="#6b7280" textAnchor="middle">
-                  модуль
-                </text>
-              </g>
-            );
-          })()}
-        </g>
-
-        {/* Caption */}
-        <text x={viewBoxWidth / 2} y={viewBoxHeight - 10} fontSize="9" fill="#6b7280" textAnchor="middle">
-          Профиль V-{width}/{height}
-        </text>
+        {/* Gap dimensions */}
+        {Array.from({ length: profileCount - 1 }).map((_, i) => {
+          const x1 = startX + (i + 1) * scaledWidth + i * scaledGap;
+          const x2 = x1 + scaledGap;
+          const y = startY + substrateHeight + scaledHeight + 25;
+          
+          return (
+            <g key={`gap-${i}`}>
+              {/* Gap dimension line */}
+              <line 
+                x1={x1} 
+                y1={y} 
+                x2={x2} 
+                y2={y}
+                stroke="#0088cc"
+                strokeWidth="1"
+              />
+              {/* Left arrow */}
+              <polygon
+                points={`${x1},${y} ${x1 + 6},${y - 3} ${x1 + 6},${y + 3}`}
+                fill="#0088cc"
+              />
+              {/* Right arrow */}
+              <polygon
+                points={`${x2},${y} ${x2 - 6},${y - 3} ${x2 - 6},${y + 3}`}
+                fill="#0088cc"
+              />
+              {/* Label */}
+              <text 
+                x={(x1 + x2) / 2} 
+                y={y - 6}
+                fill="#0088cc"
+                fontSize="11"
+                fontWeight="500"
+                textAnchor="middle"
+              >
+                {gap} мм
+              </text>
+            </g>
+          );
+        })}
       </svg>
+      
+      {/* Profile name label */}
+      <div className="mt-2 text-center">
+        <span className="text-sm font-medium text-gray-700">
+          Профиль V-{width}/{height}
+        </span>
+        <span className="text-xs text-gray-500 ml-2">
+          (модуль: {width + gap} мм)
+        </span>
+      </div>
     </div>
   );
 };
+
+export default ProfileDiagram;
