@@ -218,54 +218,6 @@ export const DocumentsPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Create New Document Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card 
-          className="cursor-pointer hover:border-primary transition-colors"
-          onClick={() => handleCreateDocument('kp')}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <FileText className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Коммерческое предложение</CardTitle>
-                <CardDescription>Создать новое КП для клиента</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Создать КП
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="cursor-pointer hover:border-primary transition-colors"
-          onClick={() => handleCreateDocument('invoice')}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Receipt className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Счет на оплату</CardTitle>
-                <CardDescription>Создать новый счет для оплаты</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button className="w-full" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Создать счет
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Documents List */}
       <Tabs defaultValue="kp" className="w-full">
