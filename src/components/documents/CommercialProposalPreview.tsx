@@ -17,13 +17,18 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
     <div
       id="kp-preview"
       className="bg-white text-black w-[210mm] min-h-[297mm] mx-auto shadow-xl relative overflow-hidden"
-      style={{
-        backgroundImage: `url(${kpBackground})`,
-        backgroundSize: '210mm auto',
-        backgroundPosition: 'top center',
-        backgroundRepeat: 'no-repeat',
-      }}
     >
+      {/* Header background from template - only top portion */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-[270px]"
+        style={{
+          backgroundImage: `url(${kpBackground})`,
+          backgroundSize: '210mm auto',
+          backgroundPosition: 'top center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+      
       {/* Semi-transparent gradient background image */}
       <div 
         className="absolute inset-0"
@@ -31,20 +36,20 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
           backgroundImage: `url(${kpGradientBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.08,
+          opacity: 0.06,
           zIndex: 1,
         }}
       />
       
-      {/* White overlay to cover template content below header */}
+      {/* White content area below header */}
       <div 
-        className="absolute bg-white/95" 
+        className="absolute bg-white" 
         style={{ 
           top: '270px', 
-          left: '20px', 
-          right: '20px', 
-          bottom: '80px',
-          zIndex: 5,
+          left: 0, 
+          right: 0, 
+          bottom: 0,
+          zIndex: 2,
         }} 
       />
       
