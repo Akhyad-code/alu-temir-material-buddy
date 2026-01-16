@@ -1,44 +1,28 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { 
-  Calculator, 
-  Square, 
-  Box, 
-  Plus,
   FileText,
   Receipt,
   Printer,
   ArrowLeft,
-  RotateCcw,
-  Layers,
   Download,
   Image,
-  Ruler
 } from 'lucide-react';
 import { 
   CommercialProposal, 
   Invoice, 
   DocumentItem,
   DEFAULT_COMPANY_INFO,
-  formatCurrency 
 } from '@/types/documents';
 import { CommercialProposalPreview } from '@/components/documents/CommercialProposalPreview';
 import { InvoicePreview } from '@/components/documents/InvoicePreview';
 import { DEFAULT_DIMENSIONS } from '@/components/documents/ProfileDiagrams';
+import { CalculatorPanel } from '@/components/documents/CalculatorPanel';
+import { DocumentItemsTable } from '@/components/documents/DocumentItemsTable';
+import { ClientInfoPanel } from '@/components/documents/ClientInfoPanel';
+import { DiagramSettingsPanel } from '@/components/documents/DiagramSettingsPanel';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,91 +68,22 @@ export const LiveDocumentEditor: React.FC = () => {
   const [documentType, setDocumentType] = useState<'kp' | 'invoice'>('kp');
   const [currentDocument, setCurrentDocument] = useState<DocumentType>(createNewKP());
   
-  // Calculator state
-  const [calcTab, setCalcTab] = useState<'area' | 'material' | 'manual'>('manual');
-  
-  // Area calc
-  const [areaLength, setAreaLength] = useState('');
-  const [areaWidth, setAreaWidth] = useState('');
-  const [areaResult, setAreaResult] = useState<number | null>(null);
-  
-  // Material calc
-  const [materialName, setMaterialName] = useState('');
-  const [materialUnit, setMaterialUnit] = useState('м.п');
-  const [materialPrice, setMaterialPrice] = useState('');
-  const [materialQty, setMaterialQty] = useState('');
-  
   // Switch document type
   const handleDocumentTypeChange = (type: 'kp' | 'invoice') => {
     setDocumentType(type);
     setCurrentDocument(type === 'kp' ? createNewKP() : createNewInvoice());
   };
   
-  // Calculate area
-  const calculateArea = () => {
-    const l = parseFloat(areaLength);
-    const w = parseFloat(areaWidth);
-    if (!isNaN(l) && !isNaN(w)) {
-      setAreaResult(l * w);
-      setMaterialQty((l * w).toFixed(2));
-    }
-  };
-  
   // Add item to document
-  const addItemToDocument = useCallback(() => {
-    if (!materialName.trim()) {
-      toast.error('Введите наименование');
-      return;
-    }
-    
-    const price = parseFloat(materialPrice) || 0;
-    const qty = parseFloat(materialQty) || 1;
-    
-    const newItem: DocumentItem = {
-      id: Date.now(),
-      name: materialName,
-      size: '',
-      unit: materialUnit,
-      price: price,
-      quantity: qty,
-      total: price * qty,
-    };
-    
+  const handleAddItem = (newItem: DocumentItem) => {
     setCurrentDocument(prev => ({
       ...prev,
       items: [...prev.items, newItem],
     }));
-    
-    // Reset form
-    setMaterialName('');
-    setMaterialPrice('');
-    setMaterialQty('');
-    setAreaResult(null);
-    setAreaLength('');
-    setAreaWidth('');
-    
-    toast.success('Позиция добавлена');
-  }, [materialName, materialUnit, materialPrice, materialQty]);
-  
-  // Update item
-  const updateItem = (id: number, field: keyof DocumentItem, value: string | number) => {
-    setCurrentDocument(prev => ({
-      ...prev,
-      items: prev.items.map(item => {
-        if (item.id === id) {
-          const updated = { ...item, [field]: value };
-          if (field === 'price' || field === 'quantity') {
-            updated.total = updated.price * updated.quantity;
-          }
-          return updated;
-        }
-        return item;
-      }),
-    }));
   };
   
   // Delete item
-  const deleteItem = (id: number) => {
+  const handleDeleteItem = (id: number) => {
     setCurrentDocument(prev => ({
       ...prev,
       items: prev.items.filter(item => item.id !== id),
@@ -292,489 +207,30 @@ export const LiveDocumentEditor: React.FC = () => {
         {/* Left Panel - Calculator */}
         <div className="w-[420px] border-r border-border bg-card overflow-auto no-print">
           <div className="p-4 space-y-4">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-primary" />
-              Калькулятор
-            </h2>
-            
-            <Tabs value={calcTab} onValueChange={(v) => setCalcTab(v as any)}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="manual">Вручную</TabsTrigger>
-                <TabsTrigger value="area">Площадь</TabsTrigger>
-                <TabsTrigger value="material">Профиль</TabsTrigger>
-              </TabsList>
-              
-              {/* Manual Entry */}
-              <TabsContent value="manual" className="space-y-4 mt-4">
-                <div className="space-y-3">
-                  <div>
-                    <Label>Наименование</Label>
-                    <Input
-                      value={materialName}
-                      onChange={(e) => setMaterialName(e.target.value)}
-                      placeholder="Металлический реечный профиль V30x75..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Ед. изм.</Label>
-                      <Select value={materialUnit} onValueChange={setMaterialUnit}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="м.п">м.п</SelectItem>
-                          <SelectItem value="шт">шт</SelectItem>
-                          <SelectItem value="м²">м²</SelectItem>
-                          <SelectItem value="упак">упак</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Количество</Label>
-                      <Input
-                        type="number"
-                        value={materialQty}
-                        onChange={(e) => setMaterialQty(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Цена за ед. (тг)</Label>
-                    <Input
-                      type="number"
-                      value={materialPrice}
-                      onChange={(e) => setMaterialPrice(e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                  
-                  {materialQty && materialPrice && (
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="text-sm text-muted-foreground">Сумма:</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(parseFloat(materialQty || '0') * parseFloat(materialPrice || '0'))} ₸
-                      </div>
-                    </div>
-                  )}
-                  
-                  <Button className="w-full" onClick={addItemToDocument}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Добавить в документ
-                  </Button>
-                </div>
-              </TabsContent>
-              
-              {/* Area Calculator */}
-              <TabsContent value="area" className="space-y-4 mt-4">
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Длина (м)</Label>
-                      <Input
-                        type="number"
-                        value={areaLength}
-                        onChange={(e) => setAreaLength(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <Label>Ширина (м)</Label>
-                      <Input
-                        type="number"
-                        value={areaWidth}
-                        onChange={(e) => setAreaWidth(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full" 
-                    variant="secondary"
-                    onClick={calculateArea}
-                    disabled={!areaLength || !areaWidth}
-                  >
-                    <Square className="h-4 w-4 mr-2" />
-                    Рассчитать площадь
-                  </Button>
-                  
-                  {areaResult !== null && (
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <div className="text-sm text-muted-foreground">Площадь:</div>
-                      <div className="text-xl font-bold text-primary">
-                        {areaResult.toFixed(2)} м²
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="border-t pt-3 space-y-3">
-                    <div>
-                      <Label>Наименование материала</Label>
-                      <Input
-                        value={materialName}
-                        onChange={(e) => setMaterialName(e.target.value)}
-                        placeholder="Потолочная рейка V30x75..."
-                      />
-                    </div>
-                    <div>
-                      <Label>Цена за м² (тг)</Label>
-                      <Input
-                        type="number"
-                        value={materialPrice}
-                        onChange={(e) => setMaterialPrice(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                    
-                    <Button className="w-full" onClick={() => {
-                      setMaterialUnit('м²');
-                      addItemToDocument();
-                    }}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Добавить площадь в документ
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              {/* Profile Calculator */}
-              <TabsContent value="material" className="space-y-4 mt-4">
-                <div className="space-y-3">
-                  <div>
-                    <Label>Наименование профиля</Label>
-                    <Input
-                      value={materialName}
-                      onChange={(e) => setMaterialName(e.target.value)}
-                      placeholder="Крепежный профиль V93 L-3,02m..."
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Количество</Label>
-                      <Input
-                        type="number"
-                        value={materialQty}
-                        onChange={(e) => setMaterialQty(e.target.value)}
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <Label>Ед. изм.</Label>
-                      <Select value={materialUnit} onValueChange={setMaterialUnit}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="м.п">м.п</SelectItem>
-                          <SelectItem value="шт">шт</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label>Цена за единицу (тг)</Label>
-                    <Input
-                      type="number"
-                      value={materialPrice}
-                      onChange={(e) => setMaterialPrice(e.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                  
-                  {materialQty && materialPrice && (
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="text-sm text-muted-foreground">Сумма:</div>
-                      <div className="text-xl font-bold">
-                        {formatCurrency(parseFloat(materialQty || '0') * parseFloat(materialPrice || '0'))} ₸
-                      </div>
-                    </div>
-                  )}
-                  
-                  <Button className="w-full" onClick={addItemToDocument}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Добавить профиль
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
+            {/* Calculator */}
+            <CalculatorPanel onAddItem={handleAddItem} />
             
             {/* Items List */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center justify-between">
-                  <span>Позиции ({currentDocument.items.length})</span>
-                  <span className="text-primary font-bold">{formatCurrency(total)} ₸</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 max-h-[300px] overflow-auto">
-                {currentDocument.items.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">
-                    Добавьте позиции через калькулятор
-                  </p>
-                ) : (
-                  <table className="w-full text-xs">
-                    <thead className="bg-muted sticky top-0">
-                      <tr>
-                        <th className="px-2 py-1 text-left">Наименование</th>
-                        <th className="px-2 py-1 text-center w-12">Кол.</th>
-                        <th className="px-2 py-1 text-right w-20">Сумма</th>
-                        <th className="w-8"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentDocument.items.map((item) => (
-                        <tr key={item.id} className="border-b hover:bg-muted/30">
-                          <td className="px-2 py-1.5 truncate max-w-[150px]" title={item.name}>
-                            {item.name}
-                          </td>
-                          <td className="px-2 py-1.5 text-center">{item.quantity}</td>
-                          <td className="px-2 py-1.5 text-right font-medium">
-                            {formatCurrency(item.total)}
-                          </td>
-                          <td className="px-1 py-1.5">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 text-destructive"
-                              onClick={() => deleteItem(item.id)}
-                            >
-                              ×
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </CardContent>
-            </Card>
+            <DocumentItemsTable 
+              items={currentDocument.items}
+              total={total}
+              onDeleteItem={handleDeleteItem}
+            />
             
             {/* Profile Diagram Settings (only for KP) */}
             {documentType === 'kp' && (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Ruler className="h-4 w-4" />
-                    Чертёж профиля
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Показать чертёж</Label>
-                    <Switch
-                      checked={(currentDocument as CommercialProposal).showDiagram || false}
-                      onCheckedChange={(checked) => {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          showDiagram: checked,
-                        } as CommercialProposal));
-                      }}
-                    />
-                  </div>
-                  
-                  {(currentDocument as CommercialProposal).showDiagram && (
-                    <>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <Label className="text-xs">Ширина (мм)</Label>
-                          <Input
-                            type="number"
-                            value={(currentDocument as CommercialProposal).diagramDimensions?.width || 59}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value) || 59;
-                              setCurrentDocument(prev => ({
-                                ...prev,
-                                diagramDimensions: {
-                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
-                                  width: value,
-                                },
-                              } as CommercialProposal));
-                            }}
-                            className="h-8 text-sm"
-                            min={10}
-                            max={200}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Высота (мм)</Label>
-                          <Input
-                            type="number"
-                            value={(currentDocument as CommercialProposal).diagramDimensions?.height || 43}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value) || 43;
-                              setCurrentDocument(prev => ({
-                                ...prev,
-                                diagramDimensions: {
-                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
-                                  height: value,
-                                },
-                              } as CommercialProposal));
-                            }}
-                            className="h-8 text-sm"
-                            min={10}
-                            max={200}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Зазор (мм)</Label>
-                          <Input
-                            type="number"
-                            value={(currentDocument as CommercialProposal).diagramDimensions?.gap || 40}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value) || 40;
-                              setCurrentDocument(prev => ({
-                                ...prev,
-                                diagramDimensions: {
-                                  ...(prev as CommercialProposal).diagramDimensions || DEFAULT_DIMENSIONS,
-                                  gap: value,
-                                },
-                              } as CommercialProposal));
-                            }}
-                            className="h-8 text-sm"
-                            min={5}
-                            max={100}
-                          />
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground">
-                        Профиль V{(currentDocument as CommercialProposal).diagramDimensions?.width || 59}x{(currentDocument as CommercialProposal).diagramDimensions?.height || 43}
-                      </p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <DiagramSettingsPanel
+                document={currentDocument as CommercialProposal}
+                onUpdate={(doc) => setCurrentDocument(doc)}
+              />
             )}
             
-            {/* Client Info - Full Details */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Реквизиты клиента</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <Label className="text-xs">Название компании / ФИО</Label>
-                  <Input
-                    value={documentType === 'kp' 
-                      ? (currentDocument as CommercialProposal).client.name 
-                      : (currentDocument as Invoice).buyer.name
-                    }
-                    onChange={(e) => {
-                      if (documentType === 'kp') {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          client: { ...(prev as CommercialProposal).client, name: e.target.value }
-                        } as CommercialProposal));
-                      } else {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          buyer: { ...(prev as Invoice).buyer, name: e.target.value }
-                        } as Invoice));
-                      }
-                    }}
-                    placeholder='ТОО "Название" / ИП Фамилия И.О.'
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">БИН / ИИН</Label>
-                  <Input
-                    value={documentType === 'kp' 
-                      ? (currentDocument as CommercialProposal).client.bin || ''
-                      : (currentDocument as Invoice).buyer.bin || ''
-                    }
-                    onChange={(e) => {
-                      if (documentType === 'kp') {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          client: { ...(prev as CommercialProposal).client, bin: e.target.value }
-                        } as CommercialProposal));
-                      } else {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          buyer: { ...(prev as Invoice).buyer, bin: e.target.value }
-                        } as Invoice));
-                      }
-                    }}
-                    placeholder="123456789012"
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Адрес</Label>
-                  <Input
-                    value={documentType === 'kp' 
-                      ? (currentDocument as CommercialProposal).client.address 
-                      : (currentDocument as Invoice).buyer.address
-                    }
-                    onChange={(e) => {
-                      if (documentType === 'kp') {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          client: { ...(prev as CommercialProposal).client, address: e.target.value }
-                        } as CommercialProposal));
-                      } else {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          buyer: { ...(prev as Invoice).buyer, address: e.target.value }
-                        } as Invoice));
-                      }
-                    }}
-                    placeholder="г. Алматы, ул. Примера, 123"
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Телефон</Label>
-                  <Input
-                    value={documentType === 'kp' 
-                      ? (currentDocument as CommercialProposal).client.phone || ''
-                      : (currentDocument as Invoice).buyer.phone || ''
-                    }
-                    onChange={(e) => {
-                      if (documentType === 'kp') {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          client: { ...(prev as CommercialProposal).client, phone: e.target.value }
-                        } as CommercialProposal));
-                      } else {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          buyer: { ...(prev as Invoice).buyer, phone: e.target.value }
-                        } as Invoice));
-                      }
-                    }}
-                    placeholder="+7 7XX XXX XXXX"
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">Контактное лицо</Label>
-                  <Input
-                    value={documentType === 'kp' 
-                      ? (currentDocument as CommercialProposal).client.contactPerson || ''
-                      : (currentDocument as Invoice).buyer.contactPerson || ''
-                    }
-                    onChange={(e) => {
-                      if (documentType === 'kp') {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          client: { ...(prev as CommercialProposal).client, contactPerson: e.target.value }
-                        } as CommercialProposal));
-                      } else {
-                        setCurrentDocument(prev => ({
-                          ...prev,
-                          buyer: { ...(prev as Invoice).buyer, contactPerson: e.target.value }
-                        } as Invoice));
-                      }
-                    }}
-                    placeholder="Фамилия Имя"
-                    className="h-8 text-sm"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {/* Client Info */}
+            <ClientInfoPanel
+              documentType={documentType}
+              document={currentDocument}
+              onUpdate={setCurrentDocument}
+            />
           </div>
         </div>
 
