@@ -43,7 +43,7 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
           top: '270px', 
           left: '20px', 
           right: '20px', 
-          bottom: '45px',
+          bottom: '85px',
           zIndex: 2,
         }} 
       />
