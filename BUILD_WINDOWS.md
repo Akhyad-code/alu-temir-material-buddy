@@ -4,43 +4,86 @@
 - Node.js 18+ (https://nodejs.org/)
 - Git (https://git-scm.com/)
 
-## Шаги сборки
+## Быстрая сборка (5 минут)
 
 ### 1. Экспорт проекта в GitHub
-В Lovable нажмите кнопку **"Export to GitHub"** в настройках проекта.
+В Lovable нажмите **Settings** → **GitHub** → **Export to GitHub**
 
-### 2. Клонируйте репозиторий
+### 2. Клонируйте и соберите
 ```bash
+# Клонировать репозиторий
 git clone https://github.com/ВАШ_ЛОГИН/ВАШ_РЕПОЗИТОРИЙ.git
 cd ВАШ_РЕПОЗИТОРИЙ
-```
 
-### 3. Установите зависимости
-```bash
+# Установить зависимости
 npm install
-```
 
-### 4. Соберите веб-приложение
-```bash
+# Собрать веб-приложение
 npm run build
-```
 
-### 5. Соберите установщик Windows
-```bash
+# Собрать Windows установщик
 npm run electron:build
 ```
 
-### 6. Готово!
-Установщик будет в папке `release/`:
-- `ALU-TEMIR Калькулятор-Setup-1.0.0.exe`
+### 3. Готово!
+Установщик находится в папке `release/`:
+```
+ALU-TEMIR Калькулятор-Setup-1.0.0.exe
+```
 
-## Разработка
-Для запуска в режиме разработки:
+## Режим разработки
 ```bash
+# Запустить веб-версию
+npm run dev
+
+# В другом терминале - запустить Electron
 npm run electron:dev
 ```
 
-## Примечания
-- Данные хранятся локально в браузерном хранилище Electron
-- Установщик создаёт ярлыки на рабочем столе и в меню Пуск
-- Поддерживается только Windows x64
+## Структура проекта
+```
+├── dist/                 # Собранное веб-приложение
+├── electron/
+│   └── main.js          # Главный файл Electron
+├── release/             # Установщики Windows
+├── src/                 # Исходный код React
+├── electron-builder.json # Настройки сборки
+└── vite.config.ts       # Настройки Vite
+```
+
+## Команды package.json
+Убедитесь что в package.json есть эти скрипты:
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "electron:dev": "electron electron/main.js",
+    "electron:build": "electron-builder --config electron-builder.json"
+  },
+  "main": "electron/main.js"
+}
+```
+
+## Особенности
+- ✅ Данные хранятся локально (localStorage)
+- ✅ Работает офлайн
+- ✅ Создаёт ярлыки на рабочем столе и в меню Пуск
+- ✅ Поддержка Windows x64
+
+## Решение проблем
+
+### Ошибка "electron is not recognized"
+```bash
+npm install electron electron-builder --save-dev
+```
+
+### Ошибка при сборке
+```bash
+# Удалить node_modules и переустановить
+rm -rf node_modules
+npm install
+```
+
+### Белый экран после запуска
+Проверьте что `npm run build` выполнен успешно и папка `dist/` содержит файлы.
