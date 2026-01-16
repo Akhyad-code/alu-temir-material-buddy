@@ -1,24 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   CommercialProposal, 
   Invoice, 
-  DEFAULT_COMPANY_INFO,
   formatCurrency 
 } from '@/types/documents';
-import { Project } from '@/types';
-import { DocumentEditor } from '@/components/documents/DocumentEditor';
-import { CommercialProposalPreview } from '@/components/documents/CommercialProposalPreview';
-import { InvoicePreview } from '@/components/documents/InvoicePreview';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, 
   FileText, 
   Receipt, 
   Plus, 
-  Printer, 
   Edit,
   Trash2,
   Copy,
@@ -38,58 +32,11 @@ import {
 
 type DocumentType = CommercialProposal | Invoice;
 
-const createNewKP = (): CommercialProposal => ({
-  id: Date.now(),
-  type: 'kp',
-  number: '1',
-  date: new Date().toLocaleDateString('ru-RU'),
-  city: 'г. Алматы',
-  client: {
-    name: '',
-    address: '',
-  },
-  items: [],
-  notes: '',
-});
-
-const createNewInvoice = (): Invoice => ({
-  id: Date.now(),
-  type: 'invoice',
-  number: '1',
-  date: new Date().toLocaleDateString('ru-RU'),
-  supplier: { ...DEFAULT_COMPANY_INFO },
-  buyer: {
-    name: '',
-    address: '',
-  },
-  items: [],
-  includeVAT: true,
-  vatRate: 12,
-});
-
 export const DocumentsPage: React.FC = () => {
   const navigate = useNavigate();
   const [documents, setDocuments] = useLocalStorage<DocumentType[]>('alu-temir-documents', []);
-  const [projects] = useLocalStorage<Project[]>('alu-temir-projects', []);
-  const [activeDocument, setActiveDocument] = useState<DocumentType | null>(null);
-  const [showEditor, setShowEditor] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  const handleCreateDocument = (type: 'kp' | 'invoice') => {
-    const newDoc = type === 'kp' ? createNewKP() : createNewInvoice();
-    setDocuments([newDoc, ...documents]);
-    setActiveDocument(newDoc);
-    setShowEditor(true);
-  };
-
-  const handleUpdateDocument = (updatedDoc: DocumentType) => {
-    setActiveDocument(updatedDoc);
-    setDocuments(documents.map(doc => 
-      doc.id === updatedDoc.id ? updatedDoc : doc
-    ));
-  };
 
   const handleDeleteDocument = (id: number) => {
     setDocumentToDelete(id);
@@ -99,10 +46,6 @@ export const DocumentsPage: React.FC = () => {
   const confirmDelete = () => {
     if (documentToDelete) {
       setDocuments(documents.filter(doc => doc.id !== documentToDelete));
-      if (activeDocument?.id === documentToDelete) {
-        setActiveDocument(null);
-        setShowEditor(false);
-      }
     }
     setDeleteDialogOpen(false);
     setDocumentToDelete(null);
@@ -117,68 +60,13 @@ export const DocumentsPage: React.FC = () => {
     setDocuments([newDoc, ...documents]);
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleEditDocument = (doc: DocumentType) => {
+    // Navigate to live editor with document ID
+    navigate(`/documents/editor?edit=${doc.id}`);
   };
 
   const kpDocuments = documents.filter(doc => doc.type === 'kp') as CommercialProposal[];
   const invoiceDocuments = documents.filter(doc => doc.type === 'invoice') as Invoice[];
-
-  if (showEditor && activeDocument) {
-    return (
-      <div className="h-screen flex flex-col bg-background">
-        {/* Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card no-print">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                setShowEditor(false);
-                setActiveDocument(null);
-              }}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              {activeDocument.type === 'kp' ? 'Коммерческое предложение' : 'Счет на оплату'} 
-              {' '}№ {activeDocument.number}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handlePrint}>
-              <Printer className="h-4 w-4 mr-2" />
-              Печать
-            </Button>
-          </div>
-        </div>
-
-        {/* Editor & Preview Split View */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Editor Panel */}
-          <div className="w-[400px] border-r border-border bg-card overflow-hidden no-print">
-            <DocumentEditor 
-              document={activeDocument} 
-              onUpdate={handleUpdateDocument}
-              projects={projects}
-            />
-          </div>
-
-          {/* Preview Panel */}
-          <div className="flex-1 bg-muted/30 overflow-auto p-8 print:p-0 print:bg-white">
-            <div ref={previewRef} className="print:shadow-none">
-              {activeDocument.type === 'kp' ? (
-                <CommercialProposalPreview document={activeDocument as CommercialProposal} />
-              ) : (
-                <InvoicePreview document={activeDocument as Invoice} />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -207,17 +95,16 @@ export const DocumentsPage: React.FC = () => {
             <div>
               <h3 className="font-bold text-lg">Live Редактор</h3>
               <p className="text-sm text-muted-foreground">
-                Калькулятор + документ на одном экране
+                Создание КП и счетов с калькулятором
               </p>
             </div>
           </div>
           <Button onClick={() => navigate('/documents/editor')} size="lg">
             <Plus className="h-4 w-4 mr-2" />
-            Открыть редактор
+            Создать документ
           </Button>
         </CardContent>
       </Card>
-
 
       {/* Documents List */}
       <Tabs defaultValue="kp" className="w-full">
@@ -240,7 +127,7 @@ export const DocumentsPage: React.FC = () => {
                 <p className="text-muted-foreground">Нет коммерческих предложений</p>
                 <Button 
                   className="mt-4" 
-                  onClick={() => handleCreateDocument('kp')}
+                  onClick={() => navigate('/documents/editor?type=kp')}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Создать первое КП
@@ -271,10 +158,7 @@ export const DocumentsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            setActiveDocument(doc);
-                            setShowEditor(true);
-                          }}
+                          onClick={() => handleEditDocument(doc)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -311,7 +195,7 @@ export const DocumentsPage: React.FC = () => {
                 <Button 
                   className="mt-4" 
                   variant="outline"
-                  onClick={() => handleCreateDocument('invoice')}
+                  onClick={() => navigate('/documents/editor?type=invoice')}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Создать первый счет
@@ -342,10 +226,7 @@ export const DocumentsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            setActiveDocument(doc);
-                            setShowEditor(true);
-                          }}
+                          onClick={() => handleEditDocument(doc)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
