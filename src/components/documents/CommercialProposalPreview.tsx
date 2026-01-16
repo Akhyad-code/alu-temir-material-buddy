@@ -1,6 +1,7 @@
 import React from 'react';
 import { CommercialProposal, formatCurrency } from '@/types/documents';
 import kpBackground from '@/assets/kp-template-clean.jpg';
+import kpGradientBg from '@/assets/kp-background.jpg';
 import { ProfileDiagram, DEFAULT_DIMENSIONS } from './ProfileDiagrams';
 
 interface CommercialProposalPreviewProps {
@@ -23,9 +24,21 @@ export const CommercialProposalPreview: React.FC<CommercialProposalPreviewProps>
         backgroundRepeat: 'no-repeat',
       }}
     >
+      {/* Semi-transparent gradient background image */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${kpGradientBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.08,
+          zIndex: 1,
+        }}
+      />
+      
       {/* White overlay to cover template content below header */}
       <div 
-        className="absolute bg-white" 
+        className="absolute bg-white/95" 
         style={{ 
           top: '270px', 
           left: '20px', 
